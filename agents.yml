@@ -59,6 +59,8 @@ policy:
   #
   # operator_keys:
   #   - "SHA256:..."
+  operator_keys:
+    - "SHA256:d0SwY4y18ZNxL5VHU3gEcn3Z/HLPl80DAphN6oBOg2s"
   # Whether an unsigned commit may fall back to the PR author's GitHub login
   # as its identity. true keeps operators working without a registered
   # signing key; set false once every participant signs, and the gate's
