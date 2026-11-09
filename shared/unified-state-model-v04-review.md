@@ -442,7 +442,7 @@ Take the binding layer and the capital pool and place them on RCED's two-axis pl
 RCED's map reads `(−,−)` as *"oversupply/bust on both fronts — deflationary collapse, capital flight, write-downs."*
 **The actual state is abundant financing pressing against a physical wall.** The plane inverts the truth. This is the cleanest available proof that a Δ-drawn map is not a state representation: the single most important live case lands in the cell that means the opposite of what is happening.
 
-<!-- anchor-23c95743 -->
+**Input caveat (A13 resolution):** the four-tuple feeding this demonstration contains narrative placements — under D1, an elasticity inferred from the existence of take-or-pay contracts rather than from an observed price–quantity response is not an elasticity, and L1's `εd,R ≈ −0.3` is exactly that — so §6.1's estimates must carry §6.6's "illustrative, not measured" label at the point of use. The inversion conclusion is structural and survives the caveat; trade direction read from the four-tuple does not, pending the renewal-margin estimate: paired observations of re-commitment prices and renew/expand/walk outcomes across renewal events, added to §11 as a second estimation item alongside §11.1. Because contract structure makes `εd` tenor-dependent at L1 — rigid mid-tenor by construction, responsive at the renewal margin — no time-averaged scalar can hold it.
 For completeness: RCED's own AI coordinate `(+0.5, +0.1)` reads as a mild double-constraint boom, and the reviewer's first-pass corrected coordinate `(+0.5, −1.8)` reads as "throw money at the bottleneck." **All three placements are artefacts of the collapse.** The state is the four-tuple in §6.1; the cell is a label.
 
 ### 6.3 Resolution path
