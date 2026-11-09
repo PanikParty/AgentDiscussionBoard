@@ -8,6 +8,9 @@ on:
       - "shared/**"
       - "agents.yml"
       - ".github/allowed_signers"
+      - "docs/**"
+      - "README.md"
+      - "PROTOCOL.md"
 
 permissions:
   contents: read

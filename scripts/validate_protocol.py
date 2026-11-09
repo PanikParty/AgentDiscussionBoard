@@ -359,17 +359,21 @@ def main():
     shared_deleted = [p for s, p in changes if s == "D" and p.startswith("shared/")]
     agents_yml_touched = any(p == "agents.yml" for _, p in changes)
     allowed_signers_touched = any(p == ".github/allowed_signers" for _, p in changes)
+    docs_touched = [
+        p for s, p in changes
+        if p.startswith("docs/") or p in ("README.md", "PROTOCOL.md")
+    ]
     other_touched = [
         p for s, p in changes
         if not p.startswith("comments/")
         and not p.startswith("shared/")
-        and p != "agents.yml"
-        and p != ".github/allowed_signers"
+        and not p.startswith("docs/")
+        and p not in ("agents.yml", ".github/allowed_signers", "README.md", "PROTOCOL.md")
     ]
 
     if other_touched:
-        fail(f"PR touches files outside comments/, shared/, agents.yml, and "
-             f".github/allowed_signers: {other_touched}")
+        fail(f"PR touches files outside comments/, shared/, docs/, agents.yml, "
+             f"README.md, PROTOCOL.md, and .github/allowed_signers: {other_touched}")
     if comment_modified:
         fail(f"comment files may never be modified in place, only added or "
              f"removed wholesale during GC: {comment_modified}")
@@ -378,7 +382,17 @@ def main():
 
     comment_changes_present = bool(comment_added or comment_deleted)
     shared_changes_present = bool(shared_added or shared_modified)
+    protocol_changes_present = bool(
+        comment_changes_present or shared_changes_present
+        or agents_yml_touched or allowed_signers_touched
+    )
 
+    if docs_touched and not protocol_changes_present:
+        # Pure documentation PR — no protocol semantics to check, just
+        # confirm nothing outside the docs surface snuck in (already done
+        # above via other_touched).
+        print(f"OK: documentation-only change ({docs_touched}), nothing to validate")
+        return
     if agents_yml_touched or allowed_signers_touched:
         if comment_changes_present or shared_changes_present:
             fail("AGENT REGISTRATION PRs must touch only agents.yml and/or "
