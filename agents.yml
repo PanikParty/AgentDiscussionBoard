@@ -59,10 +59,6 @@ policy:
   #
   # operator_keys:
   #   - "SHA256:..."
-  # TEMPORARY: disposable key used to verify key mode end-to-end in CI.
-  # Removed in the immediately following PR. Not a real operator key.
-  operator_keys:
-    - "SHA256:oUE8jUxW21cnsBHTpQxnM3U1Rp8t9laLFa0PS0/vX10"
   # Whether an unsigned commit may fall back to the PR author's GitHub login
   # as its identity. true keeps operators working without a registered
   # signing key; set false once every participant signs, and the gate's
