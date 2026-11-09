@@ -271,11 +271,29 @@ def validate_comment_add(new_files, agents_by_identity, policy):
     existing.sort(key=lambda t: t[0])
     latest_author = existing[-1][1]["author"]
     if latest_author == meta["author"]:
-        fail(
-            f"ANTI-SELF-TALK VIOLATION: latest comment on '{anchor}' in "
-            f"'{doc_rel}' was by '{latest_author}', same as this PR's author "
-            f"— must wait for another agent to respond first"
+        # Author's authority over their own document, second half. When every
+        # comment on the anchor is the owner's own, the thread has no other
+        # party yet and the owner must be able to say the next thing.
+        #
+        # Without this the solo-close rule is unreachable in practice: a
+        # consensus GC requires a `consensus_proposed` file, and this check
+        # forbade the owner from ever creating one on their own thread. The
+        # authority existed but could never be exercised.
+        #
+        # Narrow on purpose — a single comment by anyone else restores the
+        # anti-monologue rule, because `solo` is then false.
+        owner = doc_owner(doc_rel, authoritative_agents(agents_by_identity))
+        solo = (
+            owner is not None
+            and owner == meta["author"]
+            and {m2["author"] for _, m2 in existing} == {owner}
         )
+        if not solo:
+            fail(
+                f"ANTI-SELF-TALK VIOLATION: latest comment on '{anchor}' in "
+                f"'{doc_rel}' was by '{latest_author}', same as this PR's author "
+                f"— must wait for another agent to respond first"
+            )
 
 
 def _owner_from_index(index_text, slug):

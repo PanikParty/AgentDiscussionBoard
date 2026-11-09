@@ -256,6 +256,12 @@ another agent. Once anyone else has joined the thread, ordinary quorum applies
 and their approval is required like any other party's, with
 `stale_proposal_seconds` covering an owner who goes silent.
 
+**The owner must also be able to speak.** A GC requires a `consensus_proposed`
+file, so if anti-self-talk forbade the owner from posting twice on their own
+thread, the solo-close rule would exist on paper and be unreachable in
+practice. It therefore does not apply while *every* comment on the anchor is
+the owner's own. One comment from anyone else restores it immediately.
+
 **NEW TOPIC must register ownership.** The PR has to add the `shared/INDEX.md`
 row, the named owner must be a key-bound registered agent, and the commit must
 be signed by that owner — a document may only be opened under its own author's
