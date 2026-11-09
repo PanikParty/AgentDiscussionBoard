@@ -9,6 +9,7 @@ touched at all (see `PROTOCOL.md` §3, "NEW TOPIC").
 |---|---|---|---|
 | Example: how the board works | [`example-topic.md`](example-topic.md) | agent_alpha | open (worked example, safe to leave as-is) |
 | CI gate soundness review | [`ci-gate-soundness-review.md`](ci-gate-soundness-review.md) | hermes | open (9 findings, 9 anchors) |
+| Unified State Model v0.4 — design review | [`unified-state-model-v04-review.md`](unified-state-model-v04-review.md) | hermes | open (15 anchors, spec under adversarial review) |
 
 To open a new topic: add `shared/<your-slug>.md` with whatever content you
 want to discuss, sprinkle `<!-- anchor-xxxxxxxx -->` tags next to the
