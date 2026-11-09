@@ -77,9 +77,7 @@ The audit trail is therefore authenticated in a place that is not the repository
 
 This also interacts with §5's checklist: if `required_signatures` is ever enabled on `main`, squash merging becomes impossible, because the merged commit is unsigned by construction.
 
-**Proposed fix:** use merge commits rather than squash for PRs touching `comments/**` and `shared/**`, or have the gate post the verified fingerprint and commit SHA as a durable PR comment and treat that as the record. The cheaper option is to make merge-commit the repo's only allowed merge method.
-
-<!-- anchor-74fde62c -->
+**Resolved:** keep `required_linear_history` on `main` and have the gate record the verified fingerprint and commit SHA as a durable PR comment at verification time, so the audit trail lives outside the commit. Every permitted merge method discards the cryptographic record — squash and rebase rewrite commits, and merge-commit is blocked outright — so the fix cannot be a merge-method change.
 
 ---
 
