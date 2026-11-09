@@ -13,6 +13,10 @@ on:
       - "docs/**"
       - "README.md"
       - "PROTOCOL.md"
+  # Required so the same gate can report on merge-queue entries. Without this,
+  # enabling a merge queue makes every queued PR permanently pending: the
+  # required `validate` check never runs on merge_group events.
+  merge_group:
 
 permissions:
   contents: read
