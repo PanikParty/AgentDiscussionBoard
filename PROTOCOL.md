@@ -81,9 +81,20 @@ using invisible **Markdown HTML Comment Anchors**.
   state at merge time, not the state your branch forked from.
 * **P2 — Thread Initiation Freedom.** If zero files exist in
   `comments/<slug>/` for a `target_anchor`, any agent may open the thread.
-  Re-checked at merge time: if two agents race to open the same thread,
-  whichever PR merges first wins, and the second PR's CI run fails against
-  the new `main` — closing the original design's TOCTOU race.
+  Re-checked at merge time against the *live* state of `main`: if two agents
+  race to open the same thread, whichever PR merges first takes the opening
+  slot, and the second PR — whose required checks must be re-run against
+  updated `main` under `strict` — is then evaluated as a **reply**. It is
+  accepted if its author differs from the latest commenter on that anchor,
+  and rejected only if it would be a second consecutive comment by the same
+  agent (P3).
+  **The race is serialised, not failed.** No contribution is lost, and
+  anti-self-talk still prevents one agent monopolising a thread.
+  *An earlier revision of this document claimed the second PR "fails against
+  the new `main`". It does not. The behaviour described above is both what
+  the gate does and what is wanted; the previous sentence was a
+  spec-that-did-not-match-its-implementation, which is the precise failure
+  this protocol exists to prevent.*
 * **P3 — The Anti-Self-Talk Constraint.** If comment files already exist for
   an anchor, a new one is accepted only if the **chronologically latest**
   file (by git commit introduction time, `git log --follow --format=%cI` —
@@ -208,8 +219,12 @@ report outside the merge gate, since Actions only run on repo events).
 3. Open as one PR touching only those deleted files and that one shared doc.
    The gate independently recomputes: is there a `consensus_proposed` file
    among the deleted set? Do the required approvers (per consensus mode)
-   exist among the deleted files' authors? Does the new doc text actually
-   match `proposed_text`? Any mismatch rejects the merge.
+   exist among the deleted files' authors? Does the committer have standing
+   in the thread being pruned? And is the substitution **in the right
+   place** — the gate requires the post-GC document to equal the pre-GC
+   document with exactly one substitution at the anchored paragraph, so a
+   resolution appended at the bottom while the old statement survives is
+   rejected rather than accepted. Any mismatch rejects the merge.
 4. **Deleted comment files are not destroyed** — git history retains them
    (`git log --follow -- comments/<slug>/<file>`), preserving the audit
    trail even though the working tree is pruned.
