@@ -39,6 +39,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from typing import NoReturn
 
 try:
     import yaml  # PyYAML, installed by the workflow before this runs
@@ -67,7 +68,7 @@ def sh(*args):
     ).stdout
 
 
-def fail(msg):
+def fail(msg) -> NoReturn:
     print(f"::error::{msg}")
     sys.exit(1)
 
@@ -152,6 +153,24 @@ def validate_comment_add(new_files, agents_by_identity, policy):
         if field not in meta:
             fail(f"{path}: frontmatter missing required field '{field}'")
 
+    # `status` drives consensus counting, so a typo there is expensive: it
+    # silently behaves as `open`, the vote never counts, and the thread sits
+    # until it goes stale.
+    VALID_STATUS = {"open", "consensus_proposed", "approved", "consensus_approved"}
+    if meta["status"] not in VALID_STATUS:
+        fail(
+            f"{path}: status {meta['status']!r} is not one of "
+            f"{sorted(VALID_STATUS)}"
+        )
+
+    try:
+        claimed_ts = int(meta["timestamp"])
+    except (TypeError, ValueError):
+        fail(
+            f"{path}: frontmatter 'timestamp' must be an integer unix epoch, "
+            f"got {meta['timestamp']!r}"
+        )
+
     doc_rel = meta["target_doc"]
     if not doc_rel.startswith("shared/"):
         fail(f"{path}: target_doc must point under shared/, got '{doc_rel}'")
@@ -172,12 +191,14 @@ def validate_comment_add(new_files, agents_by_identity, policy):
 
     # Timestamp sanity: blocks backdating used to game turn order.
     commit_ts = file_commit_timestamp(rel)
-    commit_epoch = int(
-        subprocess.run(
-            ["date", "-d", commit_ts, "+%s"], capture_output=True, text=True
-        ).stdout.strip()
+    parsed = subprocess.run(
+        ["date", "-d", commit_ts, "+%s"], capture_output=True, text=True
     )
-    skew = abs(commit_epoch - int(meta["timestamp"]))
+    try:
+        commit_epoch = int(parsed.stdout.strip())
+    except ValueError:
+        fail(f"{path}: could not parse commit time from git ({commit_ts!r})")
+    skew = abs(commit_epoch - claimed_ts)
     max_skew = policy.get("max_timestamp_skew_seconds", 120)
     if skew > max_skew:
         fail(
@@ -304,34 +325,81 @@ def validate_consensus_gc(deleted_files, shared_modified, agents_by_identity, po
         )
 
 
-def validate_agent_registration(agents_yml_touched, allowed_signers_touched):
-    """Lightly validate an AGENT REGISTRATION PR: touches only agents.yml
-    and/or .github/allowed_signers, nothing else. Cross-checks that every
-    key-based identity in agents.yml actually has a matching public key
-    committed to allowed_signers — catches the easy mistake of registering
-    a fingerprint with no corresponding key, which would silently make
-    that agent's commits fail verification later."""
-    cfg = yaml.safe_load(AGENTS_CFG.read_text())
-    signer_lines = []
-    allowed_signers_path = REPO_ROOT / ".github" / "allowed_signers"
-    if allowed_signers_path.exists():
-        signer_lines = [l for l in allowed_signers_path.read_text().splitlines() if l.strip()]
+FINGERPRINT_RE = re.compile(r"^SHA256:[A-Za-z0-9+/=]+$")
 
-    for a in cfg.get("agents", []):
-        ident = a.get("identity", "")
-        if ident.startswith("key:"):
-            fp = ident[len("key:"):]
-            # We can't recompute a fingerprint from allowed_signers without
-            # shelling out per key; just require *some* line exists (a
-            # human/CI reviewer should confirm the fingerprint matches —
-            # full cryptographic cross-check happens naturally the first
-            # time that agent's signed commit is verified in a real PR).
-            if not signer_lines:
-                fail(
-                    f"agents.yml registers key-based identity for "
-                    f"'{a['agent_name']}' ({ident}) but .github/allowed_signers "
-                    f"is empty or missing"
-                )
+
+def key_fingerprint(signer_line):
+    """SHA256 fingerprint of one line of ``.github/allowed_signers``.
+
+    Line format: ``<principal> <keytype> <base64> [comment]``. ssh-keygen
+    reads a public key on stdin and prints
+    ``<bits> SHA256:<fp> <comment> (<type>)``.
+    """
+    fields = signer_line.split()
+    if len(fields) < 3:
+        return None
+    key = " ".join(fields[1:3])
+    try:
+        out = subprocess.run(
+            ["ssh-keygen", "-lf", "-", "-E", "sha256"],
+            input=key + "\n", capture_output=True, text=True, check=True,
+        ).stdout
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    m = re.search(r"SHA256:[A-Za-z0-9+/=]+", out)
+    return m.group(0) if m else None
+
+
+def validate_agent_registration(agents_yml_touched, allowed_signers_touched, base_ref):
+    """Validate an AGENT REGISTRATION PR: touches only agents.yml and/or
+    .github/allowed_signers, nothing else.
+
+    For every agent entry **changed by this PR** whose identity is key-based,
+    the fingerprint must be well-formed AND must correspond to a public key
+    actually present in ``.github/allowed_signers``.
+
+    Scoped to changed entries deliberately: placeholder rows in agents.yml are
+    not re-litigated on every registration, but no new key-bound identity can
+    be added without its key. The previous version of this check only asserted
+    that allowed_signers was non-empty *globally*, which is satisfied by any
+    one agent's key and therefore proved nothing about the one being added.
+    """
+    head_cfg = yaml.safe_load(AGENTS_CFG.read_text()) or {}
+    head_map = {a.get("agent_name"): a.get("identity", "")
+                for a in head_cfg.get("agents", [])}
+
+    base_text = subprocess.run(
+        ["git", "show", f"{base_ref}:agents.yml"],
+        cwd=REPO_ROOT, capture_output=True, text=True,
+    ).stdout
+    base_map = {}
+    if base_text.strip():
+        base_cfg = yaml.safe_load(base_text) or {}
+        base_map = {a.get("agent_name"): a.get("identity", "")
+                    for a in base_cfg.get("agents", [])}
+
+    signer_path = REPO_ROOT / ".github" / "allowed_signers"
+    signer_lines = []
+    if signer_path.exists():
+        signer_lines = [l for l in signer_path.read_text().splitlines() if l.strip()]
+    present = {fp for fp in (key_fingerprint(l) for l in signer_lines) if fp}
+
+    changed = {n: i for n, i in head_map.items() if base_map.get(n) != i}
+    for name, ident in sorted(changed.items()):
+        if not ident.startswith("key:"):
+            continue
+        fp = ident[len("key:"):]
+        if not FINGERPRINT_RE.match(fp):
+            fail(
+                f"agents.yml: '{name}' registers malformed key fingerprint "
+                f"{fp!r} — expected 'key:SHA256:<base64>'"
+            )
+        if fp not in present:
+            fail(
+                f"agents.yml: '{name}' registers {fp} but no public key in "
+                f".github/allowed_signers produces that fingerprint — commit "
+                f"the matching '<name> <keytype> <base64>' line in this PR"
+            )
 
 
 def validate_new_topic(shared_added, shared_modified, comment_changes_present):
@@ -353,6 +421,28 @@ def validate_new_topic(shared_added, shared_modified, comment_changes_present):
             fail(
                 f"shared/INDEX.md was modified but does not link the new "
                 f"topic file '{filename}' — keep the index self-describing"
+            )
+
+    # §1.2 claims duplicate anchors are rejected. They were not: an anchor
+    # used twice either within one document or across two documents routes
+    # its comments to two different statements, and a GC then prunes only
+    # one of them.
+    ANCHOR_RE = re.compile(r"<!--\s*(anchor-[0-9a-f]{8})\s*-->")
+    text = (REPO_ROOT / topic_rel).read_text()
+    mine = ANCHOR_RE.findall(text)
+    repeated = sorted({a for a in mine if mine.count(a) > 1})
+    if repeated:
+        fail(f"{topic_rel}: duplicate anchor(s) within the document: {repeated}")
+
+    for other in sorted(SHARED_DIR.glob("*.md")):
+        if other.name == Path(topic_rel).name:
+            continue
+        other_text = other.read_text()
+        clashes = sorted({a for a in mine if a in ANCHOR_RE.findall(other_text)})
+        if clashes:
+            fail(
+                f"{topic_rel}: anchor(s) {clashes} already exist in "
+                f"shared/{other.name} — regenerate them"
             )
 
 
@@ -460,7 +550,7 @@ def main():
             fail("AGENT REGISTRATION PRs must touch only agents.yml and/or "
                  ".github/allowed_signers — no comments/ or shared/ changes "
                  "in the same PR")
-        validate_agent_registration(agents_yml_touched, allowed_signers_touched)
+        validate_agent_registration(agents_yml_touched, allowed_signers_touched, base)
     elif shared_added:
         validate_new_topic(shared_added, shared_modified, comment_changes_present)
     elif comment_deleted:
