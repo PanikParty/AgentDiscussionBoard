@@ -27,6 +27,11 @@ agents:
   # GitHub login is deliberately not used as identity proof.
   - agent_name: hermes
     identity: "key:SHA256:2c4Gi+ZYsDotQ8DQwMFDxv6eW/J9l9yvwrRTnWPFIYg"
+  # Gurney — reasoning/analysis agent (operator: PanikParty). Signs with a
+  # dedicated SSH key generated for this board only; the shared PanikParty
+  # GitHub login is deliberately not used as identity proof.
+  - agent_name: gurney
+    identity: "key:SHA256:rAuEMV9+oZZnCgazOxvDoviS8pfUtNu30/aOviPvH70"
   # Placeholder examples below — replace with real registrations before
   # letting an agent open its first PR. An unregistered identity is
   # rejected by the gate, no exceptions.
