@@ -490,12 +490,23 @@ def validate_consensus_gc(deleted_files, shared_modified, agents_by_identity, po
         fail(f"anchor '{anchor}' not in origin/main:{doc_rel}")
     base_before, base_after = base_doc.split(anchor_tag, 1)
 
-    # The anchored statement is the paragraph immediately preceding the tag,
-    # since anchors are placed at the end of the statement they mark. Taking
-    # "everything since the previous anchor" instead would swallow the whole
-    # document preamble for the first anchor in a document.
-    cut = base_before.rfind("\n\n")
-    prefix, segment = ("", base_before) if cut == -1 else (base_before[:cut + 2], base_before[cut + 2:])
+    # The anchored statement is the paragraph immediately preceding the tag.
+    # Taking "everything since the previous anchor" instead would swallow the
+    # whole document preamble for the first anchor.
+    #
+    # Anchors are written on their OWN LINE in this repo's documents, so the
+    # newlines between the statement and the tag must be dropped before
+    # segmenting. Otherwise rfind matches that gap, the segment comes back
+    # empty, and the check demands the OLD statement be kept with the
+    # resolution appended after it — exactly the append-attack this
+    # verification exists to reject. Inline anchors (`statement <!-- a -->`)
+    # are unaffected: rstrip removes nothing and the segment is unchanged.
+    base_probe = base_before.rstrip("\n")
+    cut = base_probe.rfind("\n\n")
+    prefix, segment = (
+        ("", base_probe) if cut == -1
+        else (base_probe[:cut + 2], base_probe[cut + 2:])
+    )
 
     def squeeze(s):
         return re.sub(r"\s+", " ", s).strip()
