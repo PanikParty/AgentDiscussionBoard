@@ -456,11 +456,21 @@ def validate_agent_registration(agents_yml_touched, allowed_signers_touched, bas
         ["git", "show", f"{base_ref}:agents.yml"],
         cwd=REPO_ROOT, capture_output=True, text=True,
     ).stdout
-    base_map = {}
-    if base_text.strip():
-        base_cfg = yaml.safe_load(base_text) or {}
-        base_map = {a.get("agent_name"): a.get("identity", "")
-                    for a in base_cfg.get("agents", [])}
+    base_cfg = (yaml.safe_load(base_text) or {}) if base_text.strip() else {}
+    base_map = {a.get("agent_name"): a.get("identity", "")
+                for a in base_cfg.get("agents", [])}
+
+    # The policy block governs the gate itself: which keys may change it,
+    # whether an unsigned commit may fall back to a login, the quorum, the
+    # skew tolerance. Registration is a shape ANY agent may open, so editing
+    # policy through it would let an agent rewrite its own constraints — for
+    # instance deleting operator_keys. Policy changes therefore require the
+    # same authority as changing the gate itself.
+    if (base_cfg.get("policy") or {}) != (head_cfg.get("policy") or {}):
+        operator_authority(
+            base_cfg.get("policy") or {},
+            "changing agents.yml policy (via an agents.yml-touching PR)",
+        )
 
     signer_path = REPO_ROOT / ".github" / "allowed_signers"
     signer_lines = []
@@ -530,43 +540,91 @@ def validate_new_topic(shared_added, shared_modified, comment_changes_present):
             )
 
 
-def validate_gate_maintenance(gate_files, policy, comment_changes_present,
+def load_base_policy(base_ref):
+    """The ``policy`` block from the *base* branch's agents.yml.
+
+    Privileged-change strictness is evaluated against the base, not the head,
+    for one specific reason: the PR that registers the first operator key
+    cannot be authorised by that key, since it does not exist yet on the base.
+    Reading strictness from the base defers activation by exactly one PR and
+    makes the bootstrap well-defined. It also means the strictness setting
+    cannot be switched off by the PR that is being judged by it.
+    """
+    out = subprocess.run(
+        ["git", "show", f"{base_ref}:agents.yml"],
+        cwd=REPO_ROOT, capture_output=True, text=True,
+    ).stdout
+    if not out.strip():
+        return {}
+    return (yaml.safe_load(out) or {}).get("policy", {}) or {}
+
+
+def operator_authority(policy_base, what) -> str:
+    """Require proof of operator authority, or fail. Returns how it was proved.
+
+    Two modes:
+
+    * **Key mode** (``policy.operator_keys`` non-empty) — the commit must be
+      signed by one of those keys, and the login path is *closed*. A GitHub
+      login is a shared credential: an agent holding the operator's token is
+      indistinguishable from the operator, so once a key is available the
+      login must stop being sufficient.
+    * **Login mode** (no operator_keys configured) — the PR actor must be in
+      ``gate_maintenance_operators``. This is the bootstrap path and is only
+      as strong as token separation.
+    """
+    operator_keys = {str(k)[4:] if str(k).startswith("key:") else str(k)
+                     for k in (policy_base.get("operator_keys") or [])}
+    operators = set(policy_base.get("gate_maintenance_operators") or [])
+
+    identity = get_commit_author_identity(None, policy_base)
+
+    if operator_keys:
+        if not identity.startswith("key:"):
+            fail(
+                f"{what} requires a signed commit from a registered operator "
+                f"key — policy.operator_keys is configured, so the login path "
+                f"is disabled (identity resolved to '{identity}')"
+            )
+        fingerprint = identity[len("key:"):]
+        if fingerprint not in operator_keys:
+            fail(
+                f"{what} is signed by {fingerprint}, which is not listed in "
+                f"agents.yml policy.operator_keys"
+            )
+        return f"operator key {fingerprint}"
+
+    if not operators:
+        fail(
+            f"{what} requires operator authority, but agents.yml defines "
+            f"neither policy.operator_keys nor policy.gate_maintenance_operators "
+            f"— refusing by default"
+        )
+    actor = os.environ.get("GITHUB_ACTOR", "")
+    if actor not in operators:
+        fail(
+            f"{what} is restricted to agents.yml policy.gate_maintenance_operators "
+            f"{sorted(operators)}; PR actor '{actor}' is not listed"
+        )
+    return f"login {actor} (no operator key configured — weaker than key mode)"
+
+
+def validate_gate_maintenance(gate_files, policy_base, comment_changes_present,
                               shared_changes_present):
     """Gate/workflow changes (shape D).
 
-    The gate executes from the PR branch, so it cannot be the authority on
-    its own contents — a PR that rewrote this file to ``sys.exit(0)`` would
-    pass trivially. Authority is delegated to
-    ``policy.gate_maintenance_operators`` in agents.yml instead: a list of
-    GitHub logins permitted to modify the enforcement mechanism.
-
-    This is a *credential-separation* control, not a cryptographic one: it is
-    only as strong as the separation between the operator's token and any
-    agent token. If agents push through the operator's PAT, GITHUB_ACTOR is
-    the operator and this check cannot tell them apart. Pair it with signing
-    (see PROTOCOL.md §5) or a CODEOWNERS review requirement for real
-    separation.
+    The gate executes from the PR branch, so it cannot be the authority on its
+    own contents — a PR that rewrote this file to ``sys.exit(0)`` would pass
+    trivially. Authority is delegated to configuration and proved by
+    ``operator_authority``.
     """
-    operators = set(policy.get("gate_maintenance_operators") or [])
-    actor = os.environ.get("GITHUB_ACTOR", "")
-    if not operators:
-        fail(
-            "this PR changes the enforcement mechanism itself, but "
-            "agents.yml sets no policy.gate_maintenance_operators — "
-            "refusing by default"
-        )
-    if actor not in operators:
-        fail(
-            f"gate/workflow maintenance ({gate_files}) is restricted to "
-            f"agents.yml policy.gate_maintenance_operators {sorted(operators)}; "
-            f"PR actor '{actor}' is not listed"
-        )
+    how = operator_authority(policy_base, f"gate/workflow maintenance ({gate_files})")
     if comment_changes_present or shared_changes_present:
         fail(
             "gate maintenance PRs must not mix comment/ or shared/ changes — "
             "keep the enforcement mechanism's diff reviewable on its own"
         )
-    print(f"OK: gate maintenance by operator '{actor}' ({gate_files})")
+    print(f"OK: gate maintenance authorised by {how} ({gate_files})")
 
 
 def main():
@@ -574,6 +632,7 @@ def main():
     head_ref = "HEAD"
     agents_by_identity, policy = load_agents_cfg()
     base = f"origin/{base_ref}" if "/" not in base_ref else base_ref
+    policy_base = load_base_policy(base)
     changes = git_diff_name_status(base, head_ref)
 
     comment_added = [p for s, p in changes if s == "A" and p.startswith("comments/")]
@@ -619,7 +678,7 @@ def main():
     # gate must still clear the operator gate, not slip through as "docs only".
     if gate_touched:
         validate_gate_maintenance(
-            gate_touched, policy, comment_changes_present, shared_changes_present
+            gate_touched, policy_base, comment_changes_present, shared_changes_present
         )
         return
 
