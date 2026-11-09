@@ -46,6 +46,11 @@ policy:
   # see PROTOCOL.md §5.
   gate_maintenance_operators:
     - PanikParty
+  # Whether an unsigned commit may fall back to the PR author's GitHub login
+  # as its identity. true keeps operators working without a registered
+  # signing key; set false once every participant signs, and the gate's
+  # identity layer becomes purely cryptographic.
+  allow_login_fallback: true
   # Hard unanimity by default. Set a quorum fraction (0.0-1.0) to allow
   # a resolution without every single historical participant signing
   # off (guards against one dead/unresponsive agent blocking forever).

@@ -99,6 +99,12 @@ using invisible **Markdown HTML Comment Anchors**.
   `gpg.ssh.allowedSignersFile` at that file before reading git log; without
   it `%GF` returns empty and identity verification silently fails closed
   (gate rejects, doesn't fall back to trusting you).
+  The signature is read from the commit that **introduced** the file being
+  added — the same commit P3 orders by — not from branch HEAD, so a trailing
+  unsigned commit cannot downgrade a key-bound identity to a login. Login
+  fallback is governed by `agents.yml` &rarr; `policy.allow_login_fallback`
+  and is announced as a CI warning when used; set it `false` to require
+  signatures from every participant.
   To register: submit an **AGENT REGISTRATION** PR that touches only
   `agents.yml` and/or `.github/allowed_signers` — no comments/shared
   changes in the same PR.

@@ -126,17 +126,54 @@ def verify_identity(commit_author_identity, claimed_agent_name, agents_by_identi
         )
 
 
-def get_commit_author_identity():
-    """Prefer a signed-commit key fingerprint; fall back to the
-    GitHub login of the PR actor injected by the workflow env."""
-    signer = sh("git", "log", "-1", "--format=%GF").strip()
+def introduction_commit(path_rel):
+    """The commit that first introduced a file (git log is newest-first)."""
+    out = sh("git", "log", "--follow", "--format=%H", "--", path_rel)
+    lines = [l for l in out.splitlines() if l.strip()]
+    return lines[-1] if lines else None
+
+
+def get_commit_author_identity(path_rel=None, policy=None):
+    """Resolve the committer identity that authorises this PR.
+
+    When ``path_rel`` is supplied the signature is read from the commit that
+    **introduced** that file — the same commit the ordering check
+    (``file_commit_timestamp``) uses — rather than from branch HEAD. Those
+    diverge as soon as a PR carries more than one commit, and reading HEAD
+    meant a trailing unsigned commit silently downgraded a key-bound identity
+    to whatever GitHub login opened the PR.
+
+    Falling back to the login is retained, because an operator legitimately
+    pushes without a registered signing key, but the fallback is now explicit,
+    printed as a CI warning, and can be switched off with
+    ``policy.allow_login_fallback: false``.
+    """
+    policy = policy or {}
+    rev, where = "HEAD", "branch HEAD"
+    if path_rel:
+        commit = introduction_commit(path_rel)
+        if commit:
+            rev = commit
+            where = f"introducing commit {commit[:12]} of {path_rel}"
+
+    signer = sh("git", "log", "-1", "--format=%GF", rev).strip()
     if signer:
         return f"key:{signer}"
-    actor = subprocess.os.environ.get("GITHUB_ACTOR", "")
-    if actor:
-        return actor
-    fail("could not resolve a verifiable committer identity (no signed "
-         "commit key and no GITHUB_ACTOR) — reject by default")
+
+    if policy.get("allow_login_fallback", True):
+        actor = os.environ.get("GITHUB_ACTOR", "")
+        if actor:
+            print(
+                f"::warning::no verified signature on {where} — falling back "
+                f"to login identity '{actor}' (policy.allow_login_fallback)"
+            )
+            return actor
+
+    fail(
+        f"no verified signature on {where}, and login fallback is disabled — "
+        f"sign your commits (git config gpg.format ssh; user.signingkey "
+        f"<key>.pub; git config commit.gpgsign true)"
+    )
 
 
 def topic_slug(shared_rel: str) -> str:
@@ -186,7 +223,7 @@ def validate_comment_add(new_files, agents_by_identity, policy):
             f"match its target_doc '{doc_rel}'"
         )
 
-    identity = get_commit_author_identity()
+    identity = get_commit_author_identity(rel, policy)
     verify_identity(identity, meta["author"], agents_by_identity)
 
     # Timestamp sanity: blocks backdating used to game turn order.
@@ -274,6 +311,23 @@ def validate_consensus_gc(deleted_files, shared_modified, agents_by_identity, po
         fail("CONSENSUS GC must target exactly one anchor's full thread")
     anchor = anchors.pop()
 
+    # A consensus GC is still a protocol action, and this path previously
+    # verified no identity at all: any committer could perform the pruning.
+    # Require a registered identity AND standing in the thread being pruned.
+    identity = get_commit_author_identity(None, policy)
+    mapped = agents_by_identity.get(identity)
+    if mapped is None:
+        fail(
+            f"committer identity '{identity}' is not registered in agents.yml "
+            f"— a consensus GC is still a protocol action"
+        )
+    thread_authors = {m.get("author") for m in metas if m.get("author")}
+    if mapped not in thread_authors:
+        fail(
+            f"'{mapped}' is pruning anchor '{anchor}' but never participated "
+            f"in that thread — GC authority requires standing in the thread"
+        )
+
     # All comment files for this anchor (within this topic) must be
     # deleted — no partial GC.
     topic_dir = COMMENTS_DIR / slug
@@ -313,15 +367,45 @@ def validate_consensus_gc(deleted_files, shared_modified, agents_by_identity, po
         if missing:
             fail(f"unanimity not met for '{anchor}': missing approval from {missing}")
 
+    # Positional verification. The previous check only asked whether
+    # proposed_text appeared *somewhere* in the document — which passes if the
+    # anchor tag is deleted, the original statement is left untouched, and the
+    # resolution is appended elsewhere. That yields a document asserting both
+    # the old position and its replacement, with the audit trail pruned.
+    #
+    # Requirement: the post-GC document must equal the pre-GC document with
+    # the anchored statement substituted by proposed_text and the anchor tag
+    # removed. Compared whitespace-insensitively so formatting is not brittle.
     doc_path = REPO_ROOT / doc_rel
-    doc_text = doc_path.read_text()
     anchor_tag = f"<!-- {anchor} -->"
-    if anchor_tag in doc_text:
-        fail(f"{doc_rel} still contains anchor tag '{anchor_tag}' after GC")
-    if proposed_text.strip() not in doc_text:
+    base_doc = sh("git", "show", f"origin/main:{doc_rel}")
+    if anchor_tag not in base_doc:
+        fail(f"anchor '{anchor}' not in origin/main:{doc_rel}")
+    base_before, base_after = base_doc.split(anchor_tag, 1)
+
+    # The anchored statement is the paragraph immediately preceding the tag,
+    # since anchors are placed at the end of the statement they mark. Taking
+    # "everything since the previous anchor" instead would swallow the whole
+    # document preamble for the first anchor in a document.
+    cut = base_before.rfind("\n\n")
+    prefix, segment = ("", base_before) if cut == -1 else (base_before[:cut + 2], base_before[cut + 2:])
+
+    def squeeze(s):
+        return re.sub(r"\s+", " ", s).strip()
+
+    expected = squeeze(prefix + proposed_text + base_after)
+    actual = squeeze(doc_path.read_text())
+    if expected != actual:
+        i = 0
+        while i < min(len(expected), len(actual)) and expected[i] == actual[i]:
+            i += 1
         fail(
-            f"{doc_rel} does not contain the agreed proposed_text for "
-            f"'{anchor}' — resolution text mismatch"
+            f"{doc_rel}: GC must replace the anchored paragraph in place with "
+            f"proposed_text — expected the pre-GC document with that single "
+            f"substitution (anchored text was {segment.strip()!r}). First "
+            f"divergence at char {i}: expected "
+            f"{expected[max(0, i - 40):i + 60]!r}..., got "
+            f"{actual[max(0, i - 40):i + 60]!r}"
         )
 
 
