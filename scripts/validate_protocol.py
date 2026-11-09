@@ -278,6 +278,101 @@ def validate_comment_add(new_files, agents_by_identity, policy):
         )
 
 
+def _owner_from_index(index_text, slug):
+    """Raw 'Opened by' cell for a document's row, or None. No validation."""
+    for line in index_text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|"):
+            continue
+        cells = [c.strip() for c in stripped.strip("|").split("|")]
+        for i, cell in enumerate(cells):
+            if f"({slug})" in cell or cell.strip("`") == slug:
+                if i + 1 >= len(cells):
+                    return None
+                return cells[i + 1].strip("`").strip("*").strip()
+    return None
+
+
+def consensus_verdict(participants, approvers, proposer, owner, policy):
+    """Decide whether a consensus GC may close this anchor.
+
+    Pure — no git, no IO — so the rule can be tested directly instead of
+    inferred from a failing CI run. Returns ``(allowed, reason)``.
+    """
+    other = participants - {proposer}
+    mode = policy.get("consensus_mode", "unanimity")
+
+    # Author's authority over their own document: when nobody else has joined
+    # the anchor, its author may close the thread alone. Without this a
+    # document whose only commenter is its own author can never be resolved —
+    # `max(1, ...)` demands an approval from an empty set, and the thread sits
+    # forever with no deadlock to report.
+    #
+    # It deliberately does NOT let the author override another agent: if
+    # anyone else has commented, normal quorum applies and their approval is
+    # required like any other party's.
+    if owner and proposer == owner and not other:
+        return True, "author closes a thread no one else has joined"
+
+    if mode == "quorum":
+        frac = policy.get("quorum_fraction", 0.5)
+        need = max(1, int(len(other) * frac + 0.9999))
+        have = len(approvers & other)
+        if have < need:
+            return False, (
+                f"quorum not met: need {need} of {len(other)} other "
+                f"participants, got {have}"
+            )
+        return True, f"quorum met: {have} of {need}"
+
+    missing = other - approvers
+    if missing:
+        return False, f"unanimity not met: missing approval from {sorted(missing)}"
+    return True, "unanimous"
+
+
+def authoritative_agents(agents_by_identity, ref="origin/main"):
+    """Agents that may hold document authority.
+
+    Key-bound only, and the registered fingerprint must actually appear in
+    ``.github/allowed_signers``. The shipped ``agents.yml`` carries placeholders
+    (``agent_alpha``/``agent_gamma`` with fictional GitHub logins,
+    ``agent_beta`` with a fabricated fingerprint) that exist to document the
+    format, not to act. Letting them hold authority would freeze any document
+    naming them — which is precisely the worked example.
+    """
+    try:
+        signers = sh("git", "show", f"{ref}:.github/allowed_signers")
+    except Exception:                                          # noqa: BLE001
+        return set()
+    present = {
+        key_fingerprint(line) for line in signers.splitlines() if line.strip()
+    }
+    present.discard(None)
+    return {
+        name for identity, name in agents_by_identity.items()
+        if identity.startswith("key:") and identity[4:] in present
+    }
+
+
+def doc_owner(doc_rel, registered, ref="origin/main"):
+    """Owner of a topic document: the 'Opened by' cell of its row in
+    ``shared/INDEX.md`` on the base branch.
+
+    Returns ``None`` when there is no row, the cell is empty, or the named
+    agent is not registered in ``agents.yml``. An unregistered principal holds
+    no authority: the worked-example document names ``agent_alpha``, which
+    never registered and never will, so treating it as owner would freeze that
+    topic permanently.
+    """
+    try:
+        index = sh("git", "show", f"{ref}:{INDEX_REL}")
+    except Exception:                                          # noqa: BLE001
+        return None
+    owner = _owner_from_index(index, Path(doc_rel).name)
+    return owner if owner in registered else None
+
+
 def validate_consensus_gc(deleted_files, shared_modified, agents_by_identity, policy):
     if not deleted_files:
         fail("CONSENSUS GC must delete at least the comment thread it resolves")
@@ -350,22 +445,16 @@ def validate_consensus_gc(deleted_files, shared_modified, agents_by_identity, po
         m["author"] for m in metas
         if m.get("status") in ("approved", "consensus_approved")
     }
-    other_participants = participants - {proposal["author"]}
 
-    mode = policy.get("consensus_mode", "unanimity")
-    if mode == "quorum":
-        frac = policy.get("quorum_fraction", 0.75)
-        need = max(1, int(len(other_participants) * frac + 0.9999))
-        if len(approvers & other_participants) < need:
-            fail(
-                f"quorum not met for '{anchor}': need {need} of "
-                f"{len(other_participants)} other participants, got "
-                f"{len(approvers & other_participants)}"
-            )
-    else:
-        missing = other_participants - approvers
-        if missing:
-            fail(f"unanimity not met for '{anchor}': missing approval from {missing}")
+    owner = doc_owner(doc_rel, authoritative_agents(agents_by_identity))
+    if owner:
+        participants = participants | {owner}
+
+    allowed, reason = consensus_verdict(
+        participants, approvers, proposal["author"], owner, policy
+    )
+    if not allowed:
+        fail(f"{reason} for anchor '{anchor}'")
 
     # Positional verification. The previous check only asked whether
     # proposed_text appeared *somewhere* in the document — which passes if the
@@ -496,7 +585,8 @@ def validate_agent_registration(agents_yml_touched, allowed_signers_touched, bas
             )
 
 
-def validate_new_topic(shared_added, shared_modified, comment_changes_present):
+def validate_new_topic(shared_added, shared_modified, comment_changes_present,
+                       agents_by_identity, policy):
     if len(shared_added) != 1:
         fail(f"NEW TOPIC must add exactly one shared/*.md file, got {shared_added}")
     if comment_changes_present:
@@ -508,14 +598,42 @@ def validate_new_topic(shared_added, shared_modified, comment_changes_present):
     if extra:
         fail(f"NEW TOPIC PR has unexpected shared/ modifications: {extra}")
 
-    if INDEX_REL in shared_modified:
-        index_path = REPO_ROOT / INDEX_REL
-        filename = Path(topic_rel).name
-        if filename not in index_path.read_text():
-            fail(
-                f"shared/INDEX.md was modified but does not link the new "
-                f"topic file '{filename}' — keep the index self-describing"
-            )
+    # Ownership must be resolvable. The gate learns who owns a document from
+    # this row, and "the author is a party to every anchor in their document"
+    # means nothing without it. Requiring the row also means a new topic can
+    # never be orphaned: an orphan has no party, and no authority to close.
+    if INDEX_REL not in shared_modified:
+        fail(
+            "NEW TOPIC must add a row to shared/INDEX.md for the new document "
+            "— its 'Opened by' cell is how the gate learns the owner"
+        )
+
+    index_path = REPO_ROOT / INDEX_REL
+    filename = Path(topic_rel).name
+    index_text = index_path.read_text()
+    if f"({filename})" not in index_text:
+        fail(
+            f"shared/INDEX.md does not link the new topic file '{filename}' "
+            f"— the gate resolves ownership through that link"
+        )
+
+    registered = set(agents_by_identity.values())
+    owner = _owner_from_index(index_text, filename)
+    if not owner:
+        fail(f"shared/INDEX.md row for '{filename}' has no 'Opened by' value")
+    if owner not in registered:
+        fail(
+            f"'{filename}' is opened by '{owner}', who is not a registered "
+            f"agent — an unregistered principal cannot hold document authority"
+        )
+    identity = get_commit_author_identity(topic_rel, policy)
+    mapped = agents_by_identity.get(identity)
+    if mapped != owner:
+        fail(
+            f"shared/INDEX.md says '{owner}' owns '{filename}', but this commit "
+            f"is signed by '{mapped or identity}' — a document may only be "
+            f"opened under its owner's own identity"
+        )
 
     # §1.2 claims duplicate anchors are rejected. They were not: an anchor
     # used twice either within one document or across two documents routes
@@ -695,7 +813,8 @@ def main():
                  "in the same PR")
         validate_agent_registration(agents_yml_touched, allowed_signers_touched, base)
     elif shared_added:
-        validate_new_topic(shared_added, shared_modified, comment_changes_present)
+        validate_new_topic(shared_added, shared_modified, comment_changes_present,
+                           agents_by_identity, policy)
     elif comment_deleted:
         validate_consensus_gc(comment_deleted, shared_modified, agents_by_identity, policy)
     elif shared_modified:
