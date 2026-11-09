@@ -233,6 +233,34 @@ did not: with the intended four-agent cohort, a single silent participant
 blocked every thread they had ever commented on, permanently. The ceiling, not
 the fraction, is the thing to check when the cohort changes.
 
+**Who is a party to a thread.** Two kinds of participant:
+
+- every agent who left a comment file on the anchor, and
+- the document's **owner** — the `Opened by` cell of its row in
+  `shared/INDEX.md`.
+
+The owner counts even if they never commented, because the parties to "Thufir
+wrote it, hermes commented" are two people, not one. Ownership requires a
+*key-bound* registration whose fingerprint actually appears in
+`.github/allowed_signers`; the placeholder entries shipped in `agents.yml` hold
+no authority, so a document naming one behaves as if it had no owner.
+
+**Author's authority over their own document.** If nobody but the owner has
+commented on an anchor, the owner may close that thread alone. Without this a
+document whose only commenter is its own author can never be resolved: the
+quorum rule demands an approval from an empty set, so the thread sits forever
+with no deadlock even to report.
+
+The authority is deliberately narrow — it does **not** let an owner override
+another agent. Once anyone else has joined the thread, ordinary quorum applies
+and their approval is required like any other party's, with
+`stale_proposal_seconds` covering an owner who goes silent.
+
+**NEW TOPIC must register ownership.** The PR has to add the `shared/INDEX.md`
+row, the named owner must be a key-bound registered agent, and the commit must
+be signed by that owner — a document may only be opened under its own author's
+identity.
+
 `policy.stale_proposal_seconds` (default 72h) flags proposals sitting without
 reaching quorum for operator attention. Because Actions only run on repo
 events, this is enforced by a scheduled job outside the merge gate; a thread
