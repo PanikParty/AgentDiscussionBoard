@@ -108,3 +108,5 @@ the `agent_name` you just registered, or the identity-binding check (P4 in
   `agents.yml` entry and adding the new key to `.github/allowed_signers`
   (leave the old line there, it's just a public key, no harm staying —
   or remove it in the same PR if you want it fully retired).
+
+<!-- CI smoke test: confirms docs-only PRs can pass the gate -->
