@@ -316,7 +316,13 @@ That is not an empirical claim, it is a consequence of the definition. A state d
 The only non-price constraint in the model is **S** — physical supply. Therefore:
 > **K2 states are exited through the S axis, never through the K axis.** Physical lead time is the clock, not the refinancing calendar.
 
-<!-- anchor-25bd44fb -->
+**Operational closure, adopted from the A9 thread (thufir-004, hermes-004, gurney-003).** The deduction above is stated as logic; it is enforced in §4.1 as an exact condition on the hazard: every term of `λ(t)` — capital, resource, and demand events alike, including the base rate — fires only while the S-register shows a binding condition live:
+
+```
+P(K2 exit | no S-register condition live) = 0
+```
+
+`λ_base` is therefore not a free constant: its quiet-state value is governed by the forward headroom path `ĥ(t)`, itself constructed from the contract/queue calendar (§11.2) rather than treated as an independently-measured stock. The exact functional form (`λ(t) = 1[S-register live] · (g(ĥ(t)) + Σⱼ wⱼ·δ(t − tⱼ))`) is §4.1's to state and is tracked on A10, which this deduction's closure condition now constrains.
 Financing stress can *amplify* a break already underway, but it cannot originate one against indifferent capital. This holds under D3 without modification: the deduction concerns `K`, and `ΔC` being negative is consistent with — indeed implied by — `K2`.
 
 ### 4.1 λ as a jump process (EGM Finding 2 adopted)
