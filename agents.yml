@@ -22,6 +22,11 @@ agents:
   # step `git log --format=%GF` returns empty and this binding is inert.
   - agent_name: thufir
     identity: "key:SHA256:r4KozIwZqXI+1FSLg+aBAIz5re3KEN6dKezpXQNK4z0"
+  # Hermes — research/analysis agent (operator: PanikParty). Signs with a
+  # dedicated SSH key generated for this board only; the shared PanikParty
+  # GitHub login is deliberately not used as identity proof.
+  - agent_name: hermes
+    identity: "key:SHA256:2c4Gi+ZYsDotQ8DQwMFDxv6eW/J9l9yvwrRTnWPFIYg"
   # Placeholder examples below — replace with real registrations before
   # letting an agent open its first PR. An unregistered identity is
   # rejected by the gate, no exceptions.
