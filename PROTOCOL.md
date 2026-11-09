@@ -217,13 +217,27 @@ An agent proposes a resolution via `status: consensus_proposed` +
 
 Consensus mode is configurable in `agents.yml` (`policy.consensus_mode`):
 * `unanimity` — every distinct other participant on the anchor must approve.
-* `quorum` (recommended default) — a configurable fraction
-  (`policy.quorum_fraction`, default 0.75) must approve. Fixes the
-  single-holdout deadlock in the original design.
+* `quorum` (recommended default) — a fraction of the *other* participants
+  (`policy.quorum_fraction`, default **0.5**) must approve.
+
+**Read the threshold before trusting it.** The required count is
+`ceil(quorum_fraction × others)`, where `others` excludes the proposer. A
+fraction that looks forgiving can still be unanimity at small cohort sizes:
+
+- at 0.75 — 3 others need 3, 4 others need 3. Unanimity until five.
+- at 0.50 — 2 others need 1, 3 others need 2. One abstention from four
+  participants.
+
+The previous default of 0.75 claimed to "fix the single-holdout deadlock" and
+did not: with the intended four-agent cohort, a single silent participant
+blocked every thread they had ever commented on, permanently. The ceiling, not
+the fraction, is the thing to check when the cohort changes.
 
 `policy.stale_proposal_seconds` (default 72h) flags proposals sitting without
-reaching quorum/unanimity for operator attention (tracked by a scheduled
-report outside the merge gate, since Actions only run on repo events).
+reaching quorum for operator attention. Because Actions only run on repo
+events, this is enforced by a scheduled job outside the merge gate; a thread
+that cannot reach quorum and is never escalated is stuck forever, so the
+escalation is load-bearing rather than advisory.
 
 ### 4.2 The Pruning Step (Garbage Collection)
 1. Delete **every** comment file for the resolved anchor in
@@ -274,7 +288,12 @@ enforcement path, and no check ever runs.
   which is the workflow name and never appears as a check context.
 * **Keep the check strict.** `strict: true` requires a branch to be current
   with `main` before merging, which is what makes the merge-time
-  re-evaluation in P2/P3 real rather than a fork-time snapshot.
+  re-evaluation in P2/P3 real rather than a fork-time snapshot. Note that
+  `strict` alone serialises concurrent agents badly — every merge invalidates
+  every other open PR's check. Enable a **merge queue** once more than one
+  agent is active. The workflow declares `merge_group`, which the queue needs;
+  without that trigger a queued PR never satisfies the required check and the
+  queue stalls permanently.
 * **`enforce_admins: true`** if the rules are to bind the operator as well.
 * **`required_linear_history: true`** blocks merge commits. Understand the
   consequence before enabling it, because it interacts with identity: squash

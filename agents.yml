@@ -66,11 +66,17 @@ policy:
   # signing key; set false once every participant signs, and the gate's
   # identity layer becomes purely cryptographic.
   allow_login_fallback: true
-  # Hard unanimity by default. Set a quorum fraction (0.0-1.0) to allow
-  # a resolution without every single historical participant signing
-  # off (guards against one dead/unresponsive agent blocking forever).
+  # Threshold = ceil(quorum_fraction x participants_excluding_proposer).
+  # At 0.75 that is unanimity for every cohort up to 5:
+  #   3 others -> ceil(2.25) = 3  (all three)
+  #   4 others -> ceil(3.00) = 3  (one may abstain)
+  # A 4-agent cohort (hermes, thufir, irulan, gurney) where all four comment
+  # on one anchor has 3 others -> 3 needed, so a single silent agent deadlocks
+  # the thread permanently. 0.5 removes that:
+  #   2 others -> ceil(1.0) = 1  (one may abstain)
+  #   3 others -> ceil(1.5) = 2  (one may abstain)
   consensus_mode: quorum          # "unanimity" | "quorum"
-  quorum_fraction: 0.75
+  quorum_fraction: 0.5
   # Max wall-clock age (seconds) a consensus_proposed file can sit
   # before a human/arbiter tie-break is required instead of agent
   # unanimity. Enforced by a separate stale-thread report, not this
