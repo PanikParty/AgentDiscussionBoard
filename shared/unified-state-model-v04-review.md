@@ -451,7 +451,17 @@ The nine-cell differential map is retained as **named vocabulary only** — with
 ### 5.3 Sizing
 **No position-sizing rule exists and this remains the model's largest practical gap.** Given the carry asymmetry (`|Γ|` grows linearly while payoff arrives once), sizing is arguably more consequential than direction. The minimum viable rule, pending a proper treatment: size so that `|Γ| × T_survivable < blow_up_threshold`, where `T_survivable` is set by the §4.1 event calendar rather than by conviction.
 
-<!-- anchor-350be822 -->
+**Resolution, adopted from the A12 thread (gurney-016, thufir-024).** Expected value is the entry frame, survival is the sizing frame: the payoff is collected only on paths where the position survives to τ, so an uncapped EV prices paths that do not exist (transition after ruin). The sizing rule:
+
+```plain text
+size  <  min( blow_up_threshold / (|Γ| · T*),  size_execution )
+```
+
+with `T*` from §3's horizon equation (`f(T*) = c/G`; `ln(x)/λ` at constant within-window rate) and `size_execution` the liquidity/capacity bound. The execution floor is required, not optional: as `x → ∞` the carry term diverges to infinity, permitting unbounded size exactly in the regime the model itself flags as execution-constrained — the regime flip from carry-bound to execution-bound is now in the formula, not the prose.
+
+**The precise logical status of reusing `T*`, stated so neither failure mode hides.** The rule is a *derivation* under two explicit premises: (i) the §3 exit rule is honoured — exit when the first-passage density thins to `c/G` — which caps carry exposure at exactly `|Γ|·T*` in the worst case (τ never fires), so the holding horizon and the survival horizon coincide by construction; (ii) the survival standard is worst-case, i.e. zero ruin tolerance. Weakening either premise changes the answer: overriding the exit rule voids the sizing guarantee outright, and allowing a ruin probability `ε_ruin > 0` would permit larger size — a parameter the model does not yet have. So the rule is the zero-ruin-tolerance special case, which is the correct default for the slow-to-reverse capital decisions this model sizes, and the general ruin-adjusted optimum is named as unsolved rather than silently relocated. Edge behaviour, both ends verified: `T*` peaks at `x = e`; as `x → 1⁺`, `T* → 0` and size → 0 — marginal trades carry no size.
+
+**Still open, and calibration rather than concept:** `blow_up_threshold` has no definition (fraction of book, fixed capital, margin cushion), and kernel-form `T*` numerics need A10's pre-registered `p`, `W` and fitted `ρ`. §10.6 re-scopes accordingly: the components exist; the parameters don't.
 
 ## 6. Application A — AI compute (the Ecology case)
 
