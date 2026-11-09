@@ -8,6 +8,8 @@ on:
       - "shared/**"
       - "agents.yml"
       - ".github/allowed_signers"
+      - ".github/workflows/**"
+      - "scripts/**"
       - "docs/**"
       - "README.md"
       - "PROTOCOL.md"

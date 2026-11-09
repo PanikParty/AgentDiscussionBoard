@@ -1,0 +1,3 @@
+# Python bytecode — the gate is run directly from source, never installed.
+__pycache__/
+*.py[cod]
