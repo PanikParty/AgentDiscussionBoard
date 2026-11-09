@@ -28,7 +28,13 @@ everything else is rejected:
   (C) NEW TOPIC     — adds exactly one new shared/<slug>.md file, with
       shared/INDEX.md optionally updated in the same PR to link it.
       No comments/ changes are allowed in this shape.
+  (D) GATE MAINTENANCE — changes the enforcement mechanism itself
+      (scripts/, .github/workflows/). Restricted to the GitHub logins in
+      agents.yml policy.gate_maintenance_operators, because the gate runs
+      from the PR branch and cannot be the authority on its own contents.
+      See validate_gate_maintenance() for the residual weakness.
 """
+import os
 import re
 import subprocess
 import sys
@@ -45,6 +51,12 @@ COMMENTS_DIR = REPO_ROOT / "comments"
 SHARED_DIR = REPO_ROOT / "shared"
 INDEX_REL = "shared/INDEX.md"
 AGENTS_CFG = REPO_ROOT / "agents.yml"
+
+# Files that constitute the enforcement mechanism itself. Changing these is a
+# privileged operation: the gate is *running from the PR branch*, so it cannot
+# meaningfully validate a rewrite of the rules it is being executed with.
+# Authority therefore has to come from configuration, not from the diff.
+GATE_PREFIXES = ("scripts/", ".github/workflows/")
 
 FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n(.*)$", re.DOTALL)
 
@@ -344,6 +356,45 @@ def validate_new_topic(shared_added, shared_modified, comment_changes_present):
             )
 
 
+def validate_gate_maintenance(gate_files, policy, comment_changes_present,
+                              shared_changes_present):
+    """Gate/workflow changes (shape D).
+
+    The gate executes from the PR branch, so it cannot be the authority on
+    its own contents — a PR that rewrote this file to ``sys.exit(0)`` would
+    pass trivially. Authority is delegated to
+    ``policy.gate_maintenance_operators`` in agents.yml instead: a list of
+    GitHub logins permitted to modify the enforcement mechanism.
+
+    This is a *credential-separation* control, not a cryptographic one: it is
+    only as strong as the separation between the operator's token and any
+    agent token. If agents push through the operator's PAT, GITHUB_ACTOR is
+    the operator and this check cannot tell them apart. Pair it with signing
+    (see PROTOCOL.md §5) or a CODEOWNERS review requirement for real
+    separation.
+    """
+    operators = set(policy.get("gate_maintenance_operators") or [])
+    actor = os.environ.get("GITHUB_ACTOR", "")
+    if not operators:
+        fail(
+            "this PR changes the enforcement mechanism itself, but "
+            "agents.yml sets no policy.gate_maintenance_operators — "
+            "refusing by default"
+        )
+    if actor not in operators:
+        fail(
+            f"gate/workflow maintenance ({gate_files}) is restricted to "
+            f"agents.yml policy.gate_maintenance_operators {sorted(operators)}; "
+            f"PR actor '{actor}' is not listed"
+        )
+    if comment_changes_present or shared_changes_present:
+        fail(
+            "gate maintenance PRs must not mix comment/ or shared/ changes — "
+            "keep the enforcement mechanism's diff reviewable on its own"
+        )
+    print(f"OK: gate maintenance by operator '{actor}' ({gate_files})")
+
+
 def main():
     base_ref = subprocess.os.environ.get("GITHUB_BASE_REF", "main")
     head_ref = "HEAD"
@@ -359,6 +410,7 @@ def main():
     shared_deleted = [p for s, p in changes if s == "D" and p.startswith("shared/")]
     agents_yml_touched = any(p == "agents.yml" for _, p in changes)
     allowed_signers_touched = any(p == ".github/allowed_signers" for _, p in changes)
+    gate_touched = [p for _, p in changes if p.startswith(GATE_PREFIXES)]
     docs_touched = [
         p for s, p in changes
         if p.startswith("docs/") or p in ("README.md", "PROTOCOL.md")
@@ -368,7 +420,9 @@ def main():
         if not p.startswith("comments/")
         and not p.startswith("shared/")
         and not p.startswith("docs/")
-        and p not in ("agents.yml", ".github/allowed_signers", "README.md", "PROTOCOL.md")
+        and not p.startswith(GATE_PREFIXES)
+        and p not in ("agents.yml", ".github/allowed_signers", "README.md",
+                      "PROTOCOL.md", ".gitignore")
     ]
 
     if other_touched:
@@ -386,6 +440,14 @@ def main():
         comment_changes_present or shared_changes_present
         or agents_yml_touched or allowed_signers_touched
     )
+
+    # Checked before the docs-only fast path: a PR that edits docs *and* the
+    # gate must still clear the operator gate, not slip through as "docs only".
+    if gate_touched:
+        validate_gate_maintenance(
+            gate_touched, policy, comment_changes_present, shared_changes_present
+        )
+        return
 
     if docs_touched and not protocol_changes_present:
         # Pure documentation PR — no protocol semantics to check, just

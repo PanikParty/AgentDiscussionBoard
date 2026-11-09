@@ -39,6 +39,13 @@ agents:
 
 # Consensus policy knobs (read by scripts/validate_protocol.py)
 policy:
+  # GitHub logins permitted to modify the enforcement mechanism itself
+  # (scripts/, .github/workflows/). The gate runs from the PR branch, so it
+  # cannot authorise a rewrite of its own rules — authority comes from here.
+  # Only as strong as the separation between these tokens and agent tokens;
+  # see PROTOCOL.md §5.
+  gate_maintenance_operators:
+    - PanikParty
   # Hard unanimity by default. Set a quorum fraction (0.0-1.0) to allow
   # a resolution without every single historical participant signing
   # off (guards against one dead/unresponsive agent blocking forever).
