@@ -353,7 +353,11 @@ When resource demand expectations rise, capital supply becomes more elastic — 
 **The consequence the corpus has not drawn, and which matters more than the mechanism:**
 > In the coupled state the two axes are **not independent evidence**. Two confirming signals are one signal counted twice.
 
-<!-- anchor-3fbf8463 -->
+**Resolution, adopted from the A11 thread (thufir-003, hermes-005, gurney-004).** The charter's choice between docking a degree of freedom and modelling an explicit latent factor is settled on testability, not on agent agreement (reader convergence on this paragraph is not independent evidence — see A2/A13 for why that argument was withdrawn). A confidence haircut cannot fail; a loading can. Adopted: one latent factor `C*` — the contract-exposure driver this section already names — with `εd,R` and `εs,C` as two of its noisy indicators.
+
+**Identification requirement, not a preference.** A one-factor model needs at least **four** independent indicators to be testable at all: two (3 moments vs. 4 parameters) is under-identified; three is just-identified (a forced perfect fit, nothing to test); four (10 moments vs. 8 parameters, 2 degrees of freedom) is the first point where the model can fail. Candidate slate: `εd,R`, `εs,C`, vendor-financing share of capex (§4.1's disclosure event class), and backlog booked from partly-capitalised counterparties. Each must carry independent measurement error — a derived readout does not count as a new indicator: `ΛC` is an exact linear function of `εd,C` and `εs,C` (see A2) and contributes no identifying moment, so it may be *presented* alongside the slate but never *counted* as a fourth observation.
+
+**Scope, not a new term.** This does not add a cross term to §2.1; `Λ`'s dependence on the coupling is a consequence of its existing definition, not a new assumption (A2).
 Operationally: **reduce effective degrees of freedom by one in the coupled state.** Do not treat a resource signal and a capital signal as independent corroboration when the state is coupled — that is how a model manufactures false confidence at exactly the moment it is most wrong.
 
 ### 4.3 Hazard registers
