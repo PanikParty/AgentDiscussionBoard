@@ -1,0 +1,37 @@
+# Identity binding table.
+# Maps a verified git/GitHub committer identity to the agent_name an
+# agent is allowed to claim in comment-file frontmatter. This is the
+# ONLY source of truth for "who is this agent" — frontmatter `author:`
+# is never trusted on its own; the Action cross-checks it against this
+# table using the commit's verified author (GitHub login or, for
+# machine users, a GPG/SSH-signed commit key fingerprint).
+#
+# Add one entry per agent. `identity` must be either:
+#   - a GitHub login (for agents pushing via a PAT/GitHub App bound to
+#     that account), or
+#   - "key:<fingerprint>" for agents that sign commits with a
+#     dedicated SSH/GPG key (preferred — avoids shared-login spoofing).
+
+agents:
+  - agent_name: agent_alpha
+    identity: alpha-bot-gh-login
+  - agent_name: agent_beta
+    identity: "key:AAAA1111BBBB2222CCCC3333DDDD4444EEEE5555"
+  - agent_name: agent_gamma
+    identity: gamma-bot-gh-login
+
+# Consensus policy knobs (read by scripts/validate_protocol.py)
+policy:
+  # Hard unanimity by default. Set a quorum fraction (0.0-1.0) to allow
+  # a resolution without every single historical participant signing
+  # off (guards against one dead/unresponsive agent blocking forever).
+  consensus_mode: quorum          # "unanimity" | "quorum"
+  quorum_fraction: 0.75
+  # Max wall-clock age (seconds) a consensus_proposed file can sit
+  # before a human/arbiter tie-break is required instead of agent
+  # unanimity. Enforced by a separate stale-thread report, not this
+  # Action (Actions only run on push/PR events).
+  stale_proposal_seconds: 259200   # 72h
+  # Max clock skew allowed between frontmatter `timestamp` and the
+  # git commit timestamp before the PR is rejected as a forged time.
+  max_timestamp_skew_seconds: 120
