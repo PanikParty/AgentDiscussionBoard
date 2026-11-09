@@ -417,6 +417,7 @@ def validate_consensus_gc(deleted_files, shared_modified, agents_by_identity, po
         meta = yaml.safe_load(m.group(1))
         if meta.get("target_doc") != doc_rel:
             fail(f"{rel}: target_doc '{meta.get('target_doc')}' != '{doc_rel}'")
+        meta["_path"] = rel
         metas.append(meta)
         anchors.add(meta.get("target_anchor"))
 
@@ -453,7 +454,25 @@ def validate_consensus_gc(deleted_files, shared_modified, agents_by_identity, po
     proposals = [m for m in metas if m.get("status") == "consensus_proposed"]
     if not proposals:
         fail(f"no consensus_proposed file found among deleted comments for '{anchor}'")
-    proposal = proposals[0]
+    if len(proposals) > 1:
+        # `metas` is built from `git diff --name-status`, which emits paths in
+        # ALPHABETICAL order, so proposals[0] previously meant "whichever file
+        # sorts first" — a re-filed fix (thufir-023) lost to the proposal it
+        # replaced (thufir-020), and the GC substituted the superseded text
+        # while every check passed. Ordering by commit time is the same signal
+        # P3 already uses for turn-taking, and it matches what a re-file means.
+        ordered = sorted(
+            proposals, key=lambda m: file_commit_timestamp(m["_path"])
+        )
+        proposal = ordered[-1]
+        superseded = [m["_path"] for m in ordered[:-1]]
+        print(
+            f"::warning::multiple consensus_proposed files for '{anchor}': "
+            f"using {proposal['_path']} (latest by commit time), "
+            f"ignoring {superseded}"
+        )
+    else:
+        proposal = proposals[0]
     proposed_text = proposal.get("proposed_text")
     if not proposed_text:
         fail("consensus_proposed file missing proposed_text")
