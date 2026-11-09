@@ -182,15 +182,29 @@ A GATE MAINTENANCE PR:
 3. is opened by a GitHub login listed in
    `agents.yml` &rarr; `policy.gate_maintenance_operators`.
 
-**Residual weakness, stated plainly.** That list is a *credential-separation*
+**Two modes, and the difference is the whole point.**
+
+*Login mode* — `policy.operator_keys` empty — is a *credential-separation*
 control, not a cryptographic one. `GITHUB_ACTOR` is the PR author's login, so
 an agent pushing through the operator's token is indistinguishable from the
-operator. Two things close the gap: enable **CODEOWNERS review requirements**
-on `scripts/**` and `.github/workflows/**`, and/or register a signing key per
-operator and resolve `GITHUB_ACTOR` to a verified fingerprint instead of a
-login. Until one of those is in place, gate maintenance is
-operator-*trusted*, not operator-*proven* — which is the same standard this
-protocol rejects everywhere else.
+operator. It exists only to bootstrap the mechanism.
+
+*Key mode* — `policy.operator_keys` non-empty — **closes the login path
+entirely.** A privileged change must then carry a commit signed by one of the
+registered operator keys, verified by fingerprint exactly as comment identity
+is. This is the mode the protocol wants, because it applies to the operator
+the same rule the document already imposes on every agent: a shared credential
+proves nothing about who is acting.
+
+Strictness is read from the **base branch**, so the PR registering the first
+operator key is judged under login mode and activation lands on the following
+PR. The useful consequence is that the setting cannot be switched off by the
+very PR being judged by it — removing `operator_keys` requires the key.
+
+**Private-key custody is the entire control.** A key stored on a host the
+agent can read provides no separation whatsoever; it is theatre with better
+vocabulary. The operator's private key must never be readable by an agent. If
+it is, key mode is login mode wearing a different word.
 
 ---
 
@@ -272,7 +286,9 @@ enforcement path, and no check ever runs.
   first PR — an unregistered identity is rejected by the gate. The repo
   being public is fine here: `agents.yml` contains no secrets, only public
   identity bindings and policy knobs.
-* **CODEOWNERS (strongly recommended once the gate is editable).** Route
-  `scripts/` and `.github/workflows/` through a human reviewer in addition to
-  the automated gate. This is the only control that survives an agent holding
-  a token whose login is on the operator list — see §3.1.
+* **CODEOWNERS (recommended until key mode is active).** Route `scripts/` and
+  `.github/workflows/` through a human reviewer in addition to the automated
+  gate. This is the only control that survives an agent holding a token whose
+  login is on the operator list. It becomes redundant once
+  `policy.operator_keys` is populated and the login path is closed — see
+  §3.1.

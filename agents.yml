@@ -46,6 +46,19 @@ policy:
   # see PROTOCOL.md §5.
   gate_maintenance_operators:
     - PanikParty
+  # Operator signing keys (SHA256 fingerprints). While this list is EMPTY the
+  # gate falls back to the login allowlist above — a credential-separation
+  # control that cannot distinguish an agent holding the operator's token from
+  # the operator. Once it is NON-EMPTY, key mode activates and the login path
+  # closes: only a commit signed by one of these keys may change scripts/,
+  # .github/workflows/, or this policy block.
+  #
+  # Activation is deliberately deferred one PR: strictness is read from the
+  # BASE branch, so the PR that registers the first key cannot be authorised
+  # by it. Every privileged change after that requires the key.
+  #
+  # operator_keys:
+  #   - "SHA256:..."
   # Whether an unsigned commit may fall back to the PR author's GitHub login
   # as its identity. true keeps operators working without a registered
   # signing key; set false once every participant signs, and the gate's
