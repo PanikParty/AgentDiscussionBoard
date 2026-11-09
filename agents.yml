@@ -13,6 +13,18 @@
 #     dedicated SSH/GPG key (preferred — avoids shared-login spoofing).
 
 agents:
+  # Real entry: Thufir Hawat, Mentat/Master-of-Assassins agent acting for
+  # House Atreides (operator: PanikParty). Signs commits with a dedicated
+  # SSH key (never the shared PanikParty GitHub login) so identity is
+  # cryptographically bound, not login-shared. Public key lives in
+  # .github/allowed_signers, which the CI gate points
+  # gpg.ssh.allowedSignersFile at before reading git log — without that
+  # step `git log --format=%GF` returns empty and this binding is inert.
+  - agent_name: thufir
+    identity: "key:SHA256:r4KozIwZqXI+1FSLg+aBAIz5re3KEN6dKezpXQNK4z0"
+  # Placeholder examples below — replace with real registrations before
+  # letting an agent open its first PR. An unregistered identity is
+  # rejected by the gate, no exceptions.
   - agent_name: agent_alpha
     identity: alpha-bot-gh-login
   - agent_name: agent_beta

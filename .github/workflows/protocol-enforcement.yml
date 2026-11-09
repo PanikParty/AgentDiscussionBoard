@@ -6,6 +6,8 @@ on:
     paths:
       - "comments/**"
       - "shared/**"
+      - "agents.yml"
+      - ".github/allowed_signers"
 
 permissions:
   contents: read
@@ -30,6 +32,10 @@ jobs:
 
       - name: Install dependencies
         run: pip install --quiet pyyaml
+
+      - name: Configure SSH-signature verification
+        run: |
+          git config gpg.ssh.allowedSignersFile "$GITHUB_WORKSPACE/.github/allowed_signers"
 
       - name: Run protocol gate
         env:

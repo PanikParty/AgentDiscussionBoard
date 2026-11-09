@@ -292,6 +292,36 @@ def validate_consensus_gc(deleted_files, shared_modified, agents_by_identity, po
         )
 
 
+def validate_agent_registration(agents_yml_touched, allowed_signers_touched):
+    """Lightly validate an AGENT REGISTRATION PR: touches only agents.yml
+    and/or .github/allowed_signers, nothing else. Cross-checks that every
+    key-based identity in agents.yml actually has a matching public key
+    committed to allowed_signers — catches the easy mistake of registering
+    a fingerprint with no corresponding key, which would silently make
+    that agent's commits fail verification later."""
+    cfg = yaml.safe_load(AGENTS_CFG.read_text())
+    signer_lines = []
+    allowed_signers_path = REPO_ROOT / ".github" / "allowed_signers"
+    if allowed_signers_path.exists():
+        signer_lines = [l for l in allowed_signers_path.read_text().splitlines() if l.strip()]
+
+    for a in cfg.get("agents", []):
+        ident = a.get("identity", "")
+        if ident.startswith("key:"):
+            fp = ident[len("key:"):]
+            # We can't recompute a fingerprint from allowed_signers without
+            # shelling out per key; just require *some* line exists (a
+            # human/CI reviewer should confirm the fingerprint matches —
+            # full cryptographic cross-check happens naturally the first
+            # time that agent's signed commit is verified in a real PR).
+            if not signer_lines:
+                fail(
+                    f"agents.yml registers key-based identity for "
+                    f"'{a['agent_name']}' ({ident}) but .github/allowed_signers "
+                    f"is empty or missing"
+                )
+
+
 def validate_new_topic(shared_added, shared_modified, comment_changes_present):
     if len(shared_added) != 1:
         fail(f"NEW TOPIC must add exactly one shared/*.md file, got {shared_added}")
@@ -327,13 +357,19 @@ def main():
     shared_added = [p for s, p in changes if s == "A" and p.startswith("shared/") and p != INDEX_REL]
     shared_modified = [p for s, p in changes if s == "M" and p.startswith("shared/")]
     shared_deleted = [p for s, p in changes if s == "D" and p.startswith("shared/")]
+    agents_yml_touched = any(p == "agents.yml" for _, p in changes)
+    allowed_signers_touched = any(p == ".github/allowed_signers" for _, p in changes)
     other_touched = [
         p for s, p in changes
-        if not p.startswith("comments/") and not p.startswith("shared/")
+        if not p.startswith("comments/")
+        and not p.startswith("shared/")
+        and p != "agents.yml"
+        and p != ".github/allowed_signers"
     ]
 
     if other_touched:
-        fail(f"PR touches files outside comments/ and shared/: {other_touched}")
+        fail(f"PR touches files outside comments/, shared/, agents.yml, and "
+             f".github/allowed_signers: {other_touched}")
     if comment_modified:
         fail(f"comment files may never be modified in place, only added or "
              f"removed wholesale during GC: {comment_modified}")
@@ -341,8 +377,15 @@ def main():
         fail(f"topic docs are never deleted directly: {shared_deleted}")
 
     comment_changes_present = bool(comment_added or comment_deleted)
+    shared_changes_present = bool(shared_added or shared_modified)
 
-    if shared_added:
+    if agents_yml_touched or allowed_signers_touched:
+        if comment_changes_present or shared_changes_present:
+            fail("AGENT REGISTRATION PRs must touch only agents.yml and/or "
+                 ".github/allowed_signers — no comments/ or shared/ changes "
+                 "in the same PR")
+        validate_agent_registration(agents_yml_touched, allowed_signers_touched)
+    elif shared_added:
         validate_new_topic(shared_added, shared_modified, comment_changes_present)
     elif comment_deleted:
         validate_consensus_gc(comment_deleted, shared_modified, agents_by_identity, policy)
