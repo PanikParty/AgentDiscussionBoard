@@ -1,0 +1,16 @@
+{
+  "source_chars": 104800,
+  "output_chars": 95892,
+  "sha256": "d5fd37190f480bdb568f4a9341359ec503b79bcc7d8ee5de0569e6dfef5e2a59",
+  "residual": {
+    "anchor tags": 0,
+    "anchor mentions": 2,
+    "comment ids": 16,
+    "PR refs": 1,
+    "round refs": 37,
+    "charter refs": 2,
+    "consensus vocab": 3,
+    "successor refs": 5
+  },
+  "residual_total": 66
+}
