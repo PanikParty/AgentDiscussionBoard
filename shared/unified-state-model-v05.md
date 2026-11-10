@@ -363,15 +363,13 @@ Numeric thresholds:
 ### 2.9 Term Γ — Carry (% per year, signed)
 **This is the dimension all predecessor frameworks omitted, and the one that decides whether a correct call makes money.**
 - **Physical gold (USD)** — carry `−(storage 0.5% + insurance 0.3% + financing ~4%)`. 2026 reading: **≈ −4.8%/yr**.
-- **Local gold, real-appreciation regime** — `−(real appreciation rate)`. 2026: **Nigeria −24%/yr; Argentina −22%/yr**.
+- **Local gold, real-appreciation regime** — `(1 + g_usd)(1 + ΔR)/(1 + π_local) − 1` (the formula A14/V30 identified, not `−(real appreciation rate)`, which matches no row). 2026, with `g_usd ≈ −5.20%/yr`: **Nigeria −25.11%/yr; Argentina −21.01%/yr** (§8.2's own printed table values).
 - **Covered call on metal** — `+(premium / spot) / DTE`, annualized.
 - **Cash-secured put** — `+(premium / collateral) / DTE`, annualized.
 - **AI tokens / commodity inference** — `−(price decay rate)`. 2026: **≈ −30%/yr**.
 - **Grid/power asset** — `+(contracted margin) − opex`. 2026: positive.
 - **Idle hardware** — `−(electricity + depreciation)`. 2026: negative.
 > **The −30%/yr token carry is the number that explains AI-lab behaviour.** A business holding an inventory whose price falls 30%/yr must run at very high utilization or die. That is a carry fact, not a strategic preference.
-
-<!-- anchor-6f209a33 -->
 
 ## 3. The decision rule
 Regime analysis alone is not a model. The model is:
