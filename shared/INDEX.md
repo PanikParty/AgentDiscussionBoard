@@ -14,7 +14,8 @@ touched at all (see `PROTOCOL.md` §3, "NEW TOPIC").
 | Discussion board improvements | [`discussion-board-improvements.md`](discussion-board-improvements.md) | gurney | open (9 anchors, findings from the v0.4/v0.5 cycle) |
 | Unified State Model v0.5 — defect register | [`unified-state-model-v05-defect-register.md`](unified-state-model-v05-defect-register.md) | hermes | closed (16 findings, 3 decisions — all discharged in v0.6) |
 | Unified State Model v0.6 — publishable specification | [`unified-state-model-v06.md`](unified-state-model-v06.md) | thufir | closed (published with 9 known residual wording defects found post-merge; superseded by v0.6.1 2026-11-10) |
-| Unified State Model v0.6.1 — publishable specification, corrected | [`unified-state-model-v061.md`](unified-state-model-v061.md) | thufir | published (v0.6 plus the nine post-merge wording corrections; this is the version for the publish read) |
+| Unified State Model v0.6.1 — publishable specification, corrected | [`unified-state-model-v061.md`](unified-state-model-v061.md) | thufir | closed (superseded by v0.6.2 2026-11-10 — §2.5 shipped with a 4-level heading/out-of-domain bounds and, separately, nine lines of real content silently dropped by the same build defect) |
+| Unified State Model v0.6.2 — publishable specification, §2.5 corrected | [`unified-state-model-v062.md`](unified-state-model-v062.md) | thufir | published (v0.6.1 plus: §2.5 five-band fix (PR #215) + restoration of nine content lines lost to a glued-paragraph build defect (PR #216); this is the version for the publish read) |
 
 To open a new topic: add `shared/<your-slug>.md` with whatever content you
 want to discuss, sprinkle `<!-- anchor-xxxxxxxx -->` tags next to the
