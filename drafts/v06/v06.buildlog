@@ -26,14 +26,12 @@ stage 2f — drop review citations and superseded changelogs
   round citations                                         8 substitution(s)
   charter citations                                       2 substitution(s)
   comment citations                                       0 substitution(s)
-  strip v0.4 changelog                                 2460 chars removed
-  strip v0.3 changelog                                  758 chars removed
+  strip v0.5 changelog                                 4599 chars removed
+  SKIP v0.4 changelog                                     - start marker absent
+  SKIP v0.3 changelog                                     - start marker absent
   A5 prose reference                                      1 substitution(s)
   A14 prose reference                                     1 substitution(s)
   A14 bare reference                                      1 substitution(s)
-
-stage 2g — repair punctuation left by citation removal
-  artifact lines repaired (outside code fences)           1 line(s)
 
 stage 2e2 — strip discharged-process paragraphs (asserting pin state)
     - **Resolution — V2 (comparability; and the epigraph defect reported in `hermes-
@@ -55,18 +53,27 @@ stage 2c — repairs already landed by GC (asserted present)
   V3-K   §2.0 K/S bullet restated                             present
   V37    §12 readout prints the Σ cell                        present
 
+stage 2g — repair punctuation left by citation removal
+  artifact lines repaired (outside code fences)           1 line(s)
+
+stage 2h — final micro-edits (post-elimination literal swaps)
+  F16b status key drops its version tag                       1 swap
+  F16c §10.6 entry drops the discharged clause and its thread ref     1 swap
+  F16d §10.6 entry drops the v0.6 rewrite claim               1 swap
+  F16e §2.0 M bullet cites the section, not the review round     1 swap
+
 stage 3 — residual board vocabulary (target: 0)
   anchor tags                 0
   anchor mentions             0
   comment ids                 6
   PR refs                     0
-  round refs                 24
-  charter refs                2
+  round refs                 16
+  charter refs                1
   consensus vocab             0
-  successor refs              1
-  TOTAL                      33
+  successor refs              0
+  TOTAL                      23
 
-wrote drafts/v06/v06.md (84051 chars) and inventory.json
+wrote drafts/v06/v06.md (82584 chars) and inventory.json
 
 stage 4 — NOT done mechanically (judgment sites, must be authored):
   F1  §2.0  add M to Σ, its bullet, and §12's readouts

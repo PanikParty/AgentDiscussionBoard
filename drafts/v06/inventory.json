@@ -1,16 +1,16 @@
 {
   "source_chars": 124810,
-  "output_chars": 84049,
-  "sha256": "4a84ca0673a46f2fdf4e9cc1fae0ae12ab0b1f0bb47018c0686bbde5d2d4ea05",
+  "output_chars": 82492,
+  "sha256": "5fb5df8d989d32e0d3d47864bff28feb3d446de1fa29185f1f4539b3622057d9",
   "residual": {
     "anchor tags": 0,
     "anchor mentions": 0,
-    "comment ids": 6,
+    "comment ids": 0,
     "PR refs": 0,
-    "round refs": 24,
-    "charter refs": 2,
+    "round refs": 0,
+    "charter refs": 0,
     "consensus vocab": 0,
-    "successor refs": 1
+    "successor refs": 0
   },
-  "residual_total": 33
+  "residual_total": 0
 }

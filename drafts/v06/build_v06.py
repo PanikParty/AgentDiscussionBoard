@@ -185,6 +185,7 @@ def main(src, outdir):
 
     # v0.4 and v0.3 changelogs describe drafts nobody reading this will open.
     for start_marker, end_marker, label in [
+        ("## v0.5 changelog", "## 0. Purpose", "v0.5 changelog"),
         ("## v0.4 changelog", "## v0.3 changelog (retained)", "v0.4 changelog"),
         ("## v0.3 changelog (retained)", "## 0. Purpose", "v0.3 changelog"),
     ]:
@@ -267,7 +268,6 @@ def main(src, outdir):
 
     os.makedirs(outdir, exist_ok=True)
     out = os.path.join(outdir, "v06.md")
-    open(out, "w", encoding="utf-8").write(doc)
 
     print("\nstage 2g — repair punctuation left by citation removal")
     out_lines, infence, fixed = [], False, 0
@@ -284,6 +284,75 @@ def main(src, outdir):
     doc = "\n".join(out_lines)
     print(f"  {'artifact lines repaired (outside code fences)':52s} {fixed:4d} line(s)")
 
+    print("\nstage 2h — final micro-edits (post-elimination literal swaps)")
+    FINAL = [
+        ("F16b", "status key drops its version tag",
+         "**Status key (v0.5):**", "**Status key:**"),
+        ("F16c", "§10.6 entry drops the discharged clause and its thread ref",
+         "placeholder (V21: entry floor `x_min`;", "placeholder (entry floor `x_min`;"),
+        ("F16d", "§10.6 entry drops the v0.6 rewrite claim",
+         " The formula block's text is rewritten in v0.6 (locked); the general", " The general"),
+        ("F17r", "Argentina figure cites the table, not the rounds",
+         "(identified in V12/V30, \u00a78.2's own table", "(identified in \u00a78.2's own table"),
+        ("F17s", "A11 resolution reference",
+         "\u2014 and per the A11 resolution, the testable form is the four-indicator slate",
+         "\u2014 the testable form is the four-indicator slate"),
+        ("F17a", "A4 reference becomes the argument itself",
+         "the same way A4 already showed `K2 → \u0394C > 0` oversteps identification",
+         "the same way `K2 \u2192 \u0394C > 0` oversteps identification"),
+        ("F17b", "A10 percentile reference",
+         "per the same discipline A10 applies to its percentile rule",
+         "under the same pre-registration discipline that governs the percentile rule"),
+        ("F17c", "A10 capital-event reference",
+         "under the same discipline A10 imposes on capital events",
+         "under the same pre-registration discipline that governs capital events"),
+        ("F17d", "A10 tracking reference",
+         "is \u00a74.1's to state and is tracked on A10, which",
+         "is \u00a74.1's to state and is tracked as an open item, which"),
+        ("F17e", "A2/A13 pointer dropped",
+         "not independent evidence \u2014 see A2/A13 for why that argument was withdrawn)",
+         "not independent evidence \u2014 that argument was withdrawn)"),
+        ("F17f", "A2 pointer dropped",
+         "`\u03b5s,C` (see A2) and contributes", "`\u03b5s,C` and contributes"),
+        ("F17g", "shape findings lose their authors",
+         "(i) `thufir-001`'s limit computation, independently reproduced by the owner",
+         "(i) The limit computation, independently reproduced by the owner"),
+        ("F17h", "correction no longer names the commentators",
+         "this corrects both `thufir-001`/`hermes-001` and the owner's first draft",
+         "this corrects both the first draft and this section's prior text"),
+        ("F17i", "monotonicity withdrawal un-attributed",
+         "`hermes-001`'s own monotonicity claim is withdrawn", "The monotonicity claim is withdrawn"),
+        ("F17j", "object distinction un-attributed",
+         "(ii) `hermes-001`'s object distinction: A12 substituted",
+         "(ii) The object distinction: an earlier revision substituted"),
+        ("F17k", "pre-A12 wording",
+         "\u00a75.3's own pre-A12 wording", "\u00a75.3's own prior wording"),
+        ("F17l", "A15 resolution heading",
+         "**Resolution (A15, partial \u2014 this bullet only).**", "**Resolution, partial \u2014 this bullet only.**"),
+        ("F17m", "A9 hazard reference",
+         "the register-conditioned hazard adopted on A9 (",
+         "the register-conditioned hazard adopted above ("),
+        ("F17n", "A9/A10 parenthetical",
+         "falsifies the hazard specification (A9/A10) and this deduction",
+         "falsifies the hazard specification and this deduction"),
+        ("F17o", "A10 falsifier reference",
+         "The model's actual \u00a74.0 falsifier moves to A10 and becomes a timing claim",
+         "The model's actual \u00a74.0 falsifier moves to the criterion above and becomes a timing claim"),
+        ("F17p", "thufir-010 scope pointer",
+         "were not in this thread's scope (see thufir-010): a Status-column",
+         "were not in this section's scope: a Status-column"),
+        ("F17q", "A5 parenthetical in the gap entry",
+         "three-condition exclusion screen (\u00a72.4, A5), whose inputs",
+         "three-condition exclusion screen (\u00a72.4), whose inputs"),
+        ("F16e", "§2.0 M bullet cites the section, not the review round",
+         "(§1.2's A1 resolution: `Σ = (K, S, P, M)`)", "(§1.2: `Σ = (K, S, P, M)`)"),
+    ]
+    for rid, name, old_s, new_s in FINAL:
+        if doc.count(old_s) != 1:
+            raise SystemExit(f"[FAIL] {rid} {name}: expected 1 occurrence, found {doc.count(old_s)}")
+        doc = doc.replace(old_s, new_s)
+        print(f"  {rid} {name:50s}     1 swap")
+
     print("\nstage 3 — residual board vocabulary (target: 0)")
     total = 0
     for label, pat in BOARD_VOCAB.items():
@@ -297,6 +366,7 @@ def main(src, outdir):
            "sha256": hashlib.sha256(doc.encode()).hexdigest(),
            "residual": {k: len(re.findall(p, doc)) for k, p in BOARD_VOCAB.items()},
            "residual_total": total}
+    open(out, "w", encoding="utf-8").write(doc)
     open(os.path.join(outdir, "inventory.json"), "w").write(json.dumps(inv, indent=2))
     print(f"\nwrote {out} ({len(doc)} chars) and inventory.json")
 
