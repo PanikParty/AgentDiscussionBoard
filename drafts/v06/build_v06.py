@@ -43,12 +43,15 @@ AUTHORED = [
      "means a correct call can be carried to ruin before it is vindicated. The governing rule is the resolution below; this section's earlier "
      "placeholder sized on the wrong horizon, and only the calendar-based `T_survivable` it named survives in the repaired form.", 1),
 
-    ("F15b", "§10.6 re-scoped to calibration",
-     "**No position-sizing rule** beyond the placeholder in §5.3. Given the carry asymmetry, sizing is arguably more important than direction.",
+    ("F15b", "§10.6 re-scoped to calibration",     "**No position-sizing rule** beyond the placeholder in §5.3. Given the carry asymmetry, sizing is arguably more important than direction.",
      "**The sizing rule is derived but uncalibrated.** §5.3's `min(blow_up_threshold/(|Γ|·T_surv), size_execution)` is a derivation under two "
      "stated premises (exit rule honoured; zero ruin tolerance), not a placeholder. What is missing is calibration: `blow_up_threshold` is "
      "undefined, and the kernel-form numerics need the pre-registered decay parameters (`p`, `W`) and the fitted `ρ`. The general "
      "ruin-adjusted optimum is named as unsolved in §5.3 rather than relocated here.", 1),
+
+    ("F9", "§4.1 magnitude constraint uses the hazard's own weights",
+     "Σᵢ vᵢ(capital active at t) < ρ · ( g(ĥ(t)) + Σⱼ wⱼ(resource active at t) )",
+     "Σ_{i ∈ capital} wᵢ·κ(t − tᵢ)  <  ρ · ( g(ĥ(t)) + Σ_{j ∈ resource} wⱼ·κ(t − tⱼ) )", 1),
 ]
 
 
