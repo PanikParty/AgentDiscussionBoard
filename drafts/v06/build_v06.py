@@ -30,28 +30,25 @@ AUTHORED = [
      "Σ = (K, S, P)                    with carry Γ",
      "Σ = (K, S, P, M)                 with carry Γ", 1),
 
-    ("F1b", "M bullet in the ordering list",
-     "`εd,C` measured against *capital's own cost* classifies to a capital regime (`K0`/`K1`/`K2`). `P` is independent of `E`.",
-     "`εd,C` measured against *capital's own cost* classifies to a capital regime (`K0`/`K1`/`K2`). `P` is independent of `E`.\n"
-     "- **`M` is not derived from `E`.** `M` names the market or application a coordinate belongs to. Two coordinates are comparable "
-     "only if `M` is equal **and** every compared leg shares `(layer, price basis)`; `M` enters neither `Δ` nor `Λ`. It costs one field "
-     "and it is what makes \"is this the same market?\" answerable from the state rather than from the prose around it.", 1),
-
     ("F15a", "§5.3 opener drops the stale placeholder",
      "**No position-sizing rule exists and this remains the model's largest practical gap.** Given the carry asymmetry (`|Γ|` grows linearly while payoff arrives once), sizing is arguably more consequential than direction. The minimum viable rule, pending a proper treatment: size so that `|Γ| × T_survivable < blow_up_threshold`, where `T_survivable` is set by the §4.1 event calendar rather than by conviction.",
      "**Sizing is arguably more consequential than direction.** The carry asymmetry — `|Γ|` grows linearly while the payoff arrives once — "
      "means a correct call can be carried to ruin before it is vindicated. The governing rule is the resolution below; this section's earlier "
      "placeholder sized on the wrong horizon, and only the calendar-based `T_survivable` it named survives in the repaired form.", 1),
 
-    ("F15b", "§10.6 re-scoped to calibration",     "**No position-sizing rule** beyond the placeholder in §5.3. Given the carry asymmetry, sizing is arguably more important than direction.",
-     "**The sizing rule is derived but uncalibrated.** §5.3's `min(blow_up_threshold/(|Γ|·T_surv), size_execution)` is a derivation under two "
-     "stated premises (exit rule honoured; zero ruin tolerance), not a placeholder. What is missing is calibration: `blow_up_threshold` is "
-     "undefined, and the kernel-form numerics need the pre-registered decay parameters (`p`, `W`) and the fitted `ρ`. The general "
-     "ruin-adjusted optimum is named as unsolved in §5.3 rather than relocated here.", 1),
-
     ("F9", "§4.1 magnitude constraint uses the hazard's own weights",
      "Σᵢ vᵢ(capital active at t) < ρ · ( g(ĥ(t)) + Σⱼ wⱼ(resource active at t) )",
      "Σ_{i ∈ capital} wᵢ·κ(t − tᵢ) < ρ · ( g(ĥ(t)) + Σ_{j ∈ resource} wⱼ·κ(t − tⱼ) )", 1),
+]
+
+# Repairs that GCs have already landed in the source document. These are
+# asserted, not repaired: if one goes missing the build fails, because the
+# document would then carry text an earlier closure had removed.
+LANDED = [
+    ("F1b", "M bullet present in §2.0's ordering list", "`M` is not derived from `E`"),
+    ("F15b", "§10.6 sizing entry re-scoped", "The sizing rule is derived and repaired"),
+    ("V3-K", "§2.0 K/S bullet restated", "only `S` is a single-valued map"),
+    ("V37", "§12 readout prints the Σ cell", "the resulting **`Σ = (K, S, P, M)` cell**"),
 ]
 
 
@@ -107,7 +104,25 @@ def main(src, outdir):
 
     print("\nstage 2b — authored repairs (asserted, from the locked list)")
     for rid, name, old, new, expect in AUTHORED:
+        if old not in doc:
+            # A GC may have landed this repair in the document already. That is
+            # success, not failure: the authored list exists for text no GC can
+            # reach, and retires as closures land. Only an absent-and-unapplied
+            # repair is an error.
+            if new in doc:
+                print(f"  {rid} {name:50s}   --  already applied by GC")
+                continue
+            raise SystemExit(f"[FAIL] {rid} {name}: neither the pre-repair text nor the repaired text is present")
         doc = apply(doc, f"{rid} {name}", re.escape(old), new, expect=expect)
+
+    print("\nstage 2c — repairs already landed by GC (asserted present)")
+    for rid, name, needle in LANDED:
+        if needle not in doc:
+            raise SystemExit(
+                f"[FAIL] {rid} {name}: expected text absent. Either a landed closure was lost, or "
+                f"that closure has not been GC'd yet — check the anchor on live main before building."
+            )
+        print(f"  {rid:6s} {name:52s} present")
 
     os.makedirs(outdir, exist_ok=True)
     out = os.path.join(outdir, "v06.md")
