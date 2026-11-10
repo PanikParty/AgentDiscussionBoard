@@ -644,15 +644,13 @@ All elasticities are **illustrative, not measured** — carried forward from RCE
 - **Dot-com bust 2000–2002** — `εd = −0.5`, `εs = +0.4` → `Δ = −0.90`, `Λ = −0.05`. `Γ ≈ +5%/yr` short.
 - **Housing 2003–2007** — layer: housing stock / land entitlement.
   - `εd = +0.4`, `εs = +0.9` → `Δ = −0.50`, `Λ = +0.65`. `Γ ≈ −1%/yr` long (rent yield less financing).
-  - **This is the pedagogically important row.** Carry was negative but *tiny* — roughly 1%/yr — which is precisely why the position could be held for five years while the thesis stayed wrong. The bubble was fundable. Contrast Argentina's −22%/yr, which kills a correct position inside three years.
+  - **This is the pedagogically important row.** Carry was negative but *tiny* — roughly 1%/yr — which is precisely why the position could be held for five years while the thesis stayed wrong. The bubble was fundable. Contrast Argentina's −21.01%/yr (identified in V12/V30, §8.2's own table — not the stale −22%/yr this passage originally cited), which kills a correct position inside three years.
 - **Housing bust 2008–2009** — `εd = −0.9`, `εs = −0.3` → `Δ = −0.60`, `Λ = −0.60`. `Γ ≈ +4%/yr` short.
 - **Crypto 2022** — layer: token / block-space supply.
   - `εd = −0.7`, `εs = +0.6` → `Δ = −1.30`, `Λ = −0.05`. `Γ ≈ +10%/yr` short (funding).
   - Token issuance has near-zero marginal cost, so supply elasticity is programmatic while demand craters — the most extreme resource Δ in the sample, and still only −1.3.
 - **AI capex 2023–2026** — **not scored as one row.** See §6.1. Reporting it as a single coordinate was the error.
-**The pattern the rebuild exposes:** across five episodes `Δ` spans only −0.5 to −1.3 while `Λ` spans −0.60 to +0.65. `Δ` is close to a constant; `Λ` carries the signal.
-
-<!-- anchor-66996f50 --> See §1.2.
+**The pattern the rebuild exposes:** across five episodes `Δ` spans only −0.5 to −1.3 while `Λ` spans −0.60 to +0.65. `Δ` is close to a constant; `Λ` carries the signal. See §1.2.
 
 ## 7. Application B — Silver (the position case)
 **Current reading: ****`(K1, S0h, P0)`****, with ****`εd ≈ +0.2`****, ****`εs ≈ 0.0`**** → ****`Δ ≈ +0.2`****, ****`Λ ≈ +0.1`****.**
