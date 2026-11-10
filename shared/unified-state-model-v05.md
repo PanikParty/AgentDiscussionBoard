@@ -401,9 +401,9 @@ with `λ(t)` as §4.1 now specifies it — state-conditional (identically zero w
 <!-- anchor-a51de9a9 -->
 
 ### 3.1 Γ is mandatory on every coordinate
-A coordinate reported without a carry term is a **classification**, not a position, and must be labelled one. §6.5 rebuilds the five historical episodes with a Γ column for exactly this reason: the differential coordinates alone cannot distinguish a bubble that was affordable to hold for five years from a currency position that was unaffordable after three.
+A coordinate reported without a carry term is a **classification**, not a position, and must be labelled one. §6.6 rebuilds the five historical episodes with a Γ column for exactly this reason: the differential coordinates alone cannot distinguish a bubble that was affordable to hold for five years from a currency position that was unaffordable after three. The distinguishing test, stated once: **a coordinate is a classification when the position's carry cannot be computed at all; it is a position with parameter risk when the carry is computable but one of its inputs (here `π`, §2.7) is unestimated.**
 
-<!-- anchor-53c68126 -->
+**Resolution — V14 (classification vs position with parameter risk; findings `hermes-010`).** Yes, the two statuses distinguish cleanly — once the criterion is written down, which it now is in the section above: **classification** when the position's carry cannot be computed at all; **position with parameter risk** when the carry is computable but one input (`π`, §2.7) is unestimated. The section's worked-example pointer is corrected in place: the five-episode Γ rebuild is §6.6, not §6.5 — verified, §6.5 carries the power layer's cost, headroom, and W figures and no coordinates. This also closes the A12 chain's dangling referent: `T_survivable` must be told which status it sizes against, and the only worked instances of the two statuses are the §6.6 episodes.
 
 ## 4. Hazard rate — the transition probability
 Each transition needs an estimated hazard λ — the probability per unit time of leaving the state.
