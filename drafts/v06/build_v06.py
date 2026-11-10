@@ -36,6 +36,14 @@ AUTHORED = [
      "means a correct call can be carried to ruin before it is vindicated. The governing rule is the resolution below; this section's earlier "
      "placeholder sized on the wrong horizon, and only the calendar-based `T_survivable` it named survives in the repaired form.", 1),
 
+    ("F2a", "D1's calibration bullets carry the adopted reading",
+     "- `+1` fully elastic — quantity adjusts freely to price\n"
+     "- `0` unit-responsive — neutral\n"
+     "- `−1` fully rigid — quantity does not adjust to price",
+     "- `+1` fully elastic — quantity adjusts freely to price\n"
+     "- `0` no quantity response — the hard wall: quantity does not adjust at any price\n"
+     "- `−1` perverse contraction — a distinct register, where quantity *falls* as price rises", 1),
+
     ("F9", "§4.1 magnitude constraint uses the hazard's own weights",
      "Σᵢ vᵢ(capital active at t) < ρ · ( g(ĥ(t)) + Σⱼ wⱼ(resource active at t) )",
      "Σ_{i ∈ capital} wᵢ·κ(t − tᵢ) < ρ · ( g(ĥ(t)) + Σ_{j ∈ resource} wⱼ·κ(t − tⱼ) )", 1),

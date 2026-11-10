@@ -1,0 +1,24 @@
+source /tmp/v05c/v05_src.md: 123364 chars
+stage 1 — strip board scaffolding
+  drop preamble (topic header, why-on-a-board, charter) 7280 chars removed
+  anchors found in source                                22
+  remove anchor tags                                     22 substitution(s)
+  remove citation lists                                   9 substitution(s)
+  neutralise round labels                                11 substitution(s)
+  neutralise possessives                                 13 substitution(s)
+  retitle resolution blocks                               9 substitution(s)
+  drop review-trail footer                                1 substitution(s)
+
+stage 2 — normalise whitespace
+
+stage 2b — authored repairs (asserted, from the locked list)
+  F1a Σ carries M                                         1 substitution(s)
+  F15a §5.3 opener drops the stale placeholder            1 substitution(s)
+  F2a D1's calibration bullets carry the adopted reading    1 substitution(s)
+  F9 §4.1 magnitude constraint uses the hazard's own weights    1 substitution(s)
+
+stage 2c — repairs already landed by GC (asserted present)
+  F1b    M bullet present in §2.0's ordering list             present
+  F15b   §10.6 sizing entry re-scoped                         present
+  V3-K   §2.0 K/S bullet restated                             present
+[FAIL] V37 §12 readout prints the Σ cell: expected text absent. Either a landed closure was lost, or that closure has not been GC'd yet — check the anchor on live main before building.
