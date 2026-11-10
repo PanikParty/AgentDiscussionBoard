@@ -32,6 +32,9 @@ stage 2f — drop review citations and superseded changelogs
   A14 prose reference                                     1 substitution(s)
   A14 bare reference                                      1 substitution(s)
 
+stage 2g — repair punctuation left by citation removal
+  artifact lines repaired (outside code fences)           1 line(s)
+
 stage 2e2 — strip discharged-process paragraphs (asserting pin state)
     - **Resolution — V2 (comparability; and the epigraph defect reported in `hermes-
     - **Two edits this cannot perform, both pinned to v0.6 — one of them time-critic
@@ -63,7 +66,7 @@ stage 3 — residual board vocabulary (target: 0)
   successor refs              1
   TOTAL                      33
 
-wrote drafts/v06/v06.md (84053 chars) and inventory.json
+wrote drafts/v06/v06.md (84051 chars) and inventory.json
 
 stage 4 — NOT done mechanically (judgment sites, must be authored):
   F1  §2.0  add M to Σ, its bullet, and §12's readouts

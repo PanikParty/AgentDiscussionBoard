@@ -233,7 +233,9 @@ def main(src, outdir):
     print(f"  {'discharged-process paragraphs removed':52s} {len(dropped):4d} paragraph(s)")
 
     # attributions: "per <comment-id>" -> plain content
-    doc, n = re.subn(r"\s*\bper (?:hermes|thufir|gurney|duncan)-\d{3}\b", "", doc)
+    # Eat the preceding comma with the attribution: "verdict, per hermes-006."
+    # otherwise becomes "verdict,." — punctuation damage introduced by the pass.
+    doc, n = re.subn(r"\s*,?\s*\bper (?:hermes|thufir|gurney|duncan)-\d{3}\b", "", doc)
     print(f"  {'drop \"per <comment-id>\" attributions':52s} {n:4d} substitution(s)")
 
     print("\nstage 2d — strip review-process blocks")
@@ -266,6 +268,21 @@ def main(src, outdir):
     os.makedirs(outdir, exist_ok=True)
     out = os.path.join(outdir, "v06.md")
     open(out, "w", encoding="utf-8").write(doc)
+
+    print("\nstage 2g — repair punctuation left by citation removal")
+    out_lines, infence, fixed = [], False, 0
+    for line in doc.split("\n"):
+        if line.startswith("```"):
+            infence = not infence
+        if not infence:
+            new_line = re.sub(r",\.(\*\*)?", r".\1", line)
+            new_line = re.sub(r"^\s*\.\s+", "", new_line)
+            if new_line != line:
+                fixed += 1
+            line = new_line
+        out_lines.append(line)
+    doc = "\n".join(out_lines)
+    print(f"  {'artifact lines repaired (outside code fences)':52s} {fixed:4d} line(s)")
 
     print("\nstage 3 — residual board vocabulary (target: 0)")
     total = 0
