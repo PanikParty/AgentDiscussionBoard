@@ -1,8 +1,8 @@
-source /tmp/v05c/v05_src.md: 123364 chars
+source /tmp/v05c/v05_src.md: 124810 chars
 stage 1 — strip board scaffolding
   drop preamble (topic header, why-on-a-board, charter) 7280 chars removed
-  anchors found in source                                22
-  remove anchor tags                                     22 substitution(s)
+  anchors found in source                                20
+  remove anchor tags                                     20 substitution(s)
   remove citation lists                                   9 substitution(s)
   neutralise round labels                                11 substitution(s)
   neutralise possessives                                 13 substitution(s)
@@ -15,10 +15,38 @@ stage 2b — authored repairs (asserted, from the locked list)
   F1a Σ carries M                                         1 substitution(s)
   F15a §5.3 opener drops the stale placeholder            1 substitution(s)
   F2a D1's calibration bullets carry the adopted reading    1 substitution(s)
+  F2b §1.2 epigraph carries the adopted reading           1 substitution(s)
   F9 §4.1 magnitude constraint uses the hazard's own weights    1 substitution(s)
 
 stage 2c — repairs already landed by GC (asserted present)
   F1b    M bullet present in §2.0's ordering list             present
   F15b   §10.6 sizing entry re-scoped                         present
   V3-K   §2.0 K/S bullet restated                             present
-[FAIL] V37 §12 readout prints the Σ cell: expected text absent. Either a landed closure was lost, or that closure has not been GC'd yet — check the anchor on live main before building.
+  V37    §12 readout prints the Σ cell                        present
+
+stage 3 — residual board vocabulary (target: 0)
+  anchor tags                 0
+  anchor mentions             4
+  comment ids                35
+  PR refs                     1
+  round refs                 48
+  charter refs               21
+  consensus vocab            12
+  successor refs             16
+  TOTAL                     137
+
+wrote drafts/v06/v06.md (116377 chars) and inventory.json
+
+stage 4 — NOT done mechanically (judgment sites, must be authored):
+  F1  §2.0  add M to Σ, its bullet, and §12's readouts
+  F3  §2.4  restate K's classification (not a function of E)
+  F5  §2.5  fossil verdict   [closed by the V8 GC — verify absent]
+  F8  §3.1  cross-reference §6.5 -> §6.6
+  F9  §4.1  v_i -> w_i restricted to capital events
+  F10 §5.1  three cells keyed to one layer, prescribing another
+  F11 §5.2  add (+,−) at Λ<0; count eleven -> twelve
+  F12 §5.3  formula block: entry floor, survival horizon, cap-not-floor
+  F14 §2.9/§8.2  one table, print g_usd AND pi_us; §8.4 single figure
+  F15 §10.6 re-scope (rule exists, calibration does not)
+  F2  §1.2/§6.1/§6.2/§6.6  recode to the F2 calibration; §6.2 rewrite
+  COUNT §2.0/§2.5/§9  four -> five S levels; S− observable line

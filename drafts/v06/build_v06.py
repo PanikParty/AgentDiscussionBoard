@@ -44,6 +44,11 @@ AUTHORED = [
      "- `0` no quantity response — the hard wall: quantity does not adjust at any price\n"
      "- `−1` perverse contraction — a distinct register, where quantity *falls* as price rises", 1),
 
+    ("F2b", "§1.2 epigraph carries the adopted reading",
+     "> **Bubbles are high-Λ, near-zero-Δ events. Shortages are low-Λ, near-zero-Δ events. Both print as \"balanced\" on the differential axis.**",
+     "> **Bubbles are high-Λ events. Shortages are the `Λ ≈ 0` corner — both legs at the wall. "
+     "The low-Λ corner is not a shortage but a market coming apart.**", 1),
+
     ("F9", "§4.1 magnitude constraint uses the hazard's own weights",
      "Σᵢ vᵢ(capital active at t) < ρ · ( g(ĥ(t)) + Σⱼ wⱼ(resource active at t) )",
      "Σ_{i ∈ capital} wᵢ·κ(t − tᵢ) < ρ · ( g(ĥ(t)) + Σ_{j ∈ resource} wⱼ·κ(t − tⱼ) )", 1),
