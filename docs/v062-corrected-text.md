@@ -143,6 +143,17 @@ Supply is **two-dimensional**: how far elasticity extends, *and* how steeply cos
 
 The five bands are disjoint and exhaustive over the index's `[−1, +1]` domain: `S−` below `−0.05`, `S0h` the zero band, then three positive bands. Every `εs` classifies to exactly one level.
 
+**Why S0h and S0s must be separated:** they resolve oppositely. S0h is a **hard stop** — the project dies. S0s is a **price ceiling that eventually clears** — the project proceeds at a worse return, and the cost lands somewhere. Confusing them makes you call a temporary squeeze permanent, or a permanent wall temporary. That is the difference between buying the dip and buying the collapse.
+**Observables for S:**
+- **Order-to-delivery lead time** — `> 24 months` → S0h unless a build path exists, in which case S0s; `3–24 months` → S1; `< 1 month` → S2.
+- **Marginal cost slope** — unit cost rise for the next increment. `> 3x` → S0s.
+- **Marginal cost floor** — MC → 0 → S2.
+- **Substitution test** — can demand be satisfied without new physical capacity? If yes → S2.
+- **Headroom** — uncommitted capacity net of contracted load. When headroom hits zero, S0h is imminent regardless of cost.
+- **Contraction signal** — does measured quantity fall as price rises? If yes → S−, regardless of magnitude.
+*Examples:* silver mine supply → **S0h**. Grid interconnect / transformers / HBM → **S0h**. Behind-the-meter solar → **S2**. Fabricated parts → **S1**. LLM tokens → **S2**.
+> **S is scored per layer, never per good** (§2.2). **System behaviour is set by the least elastic layer, not the average.** This is the single most important operating rule in the model. Assigning one S to "intelligence" is a category error with a predictable cost: you will price the token market and be surprised by the electricity market.
+
 ### 2.6 Modifier W — Cost Bearer
 A physical constraint does not resolve on physics alone. **The same S0h state relaxes or hardens depending on who pays for the expansion.** W is a modifier, not an axis: it modulates the *sign* of the hazard.
 - **W0 — Customer-funded.** The new load pays for its own generation, interconnection, and network upgrades. The constraint **relaxes** — building becomes economically rational and it happens.
