@@ -51,7 +51,7 @@ AUTHORED = [
 
     ("F9", "§4.1 magnitude constraint uses the hazard's own weights",
      "Σᵢ vᵢ(capital active at t) < ρ · ( g(ĥ(t)) + Σⱼ wⱼ(resource active at t) )",
-     "Σ_{i ∈ capital} wᵢ·κ(t − tᵢ)  <  ρ · ( g(ĥ(t)) + Σ_{j ∈ resource} wⱼ·κ(t − tⱼ) )", 1),
+     "Σ_{i ∈ capital} wᵢ·κ(t − tᵢ) < ρ · ( g(ĥ(t)) + Σ_{j ∈ resource} wⱼ·κ(t − tⱼ) )", 1),
 ]
 
 
