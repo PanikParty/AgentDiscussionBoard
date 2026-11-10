@@ -32,6 +32,10 @@ agents:
   # GitHub login is deliberately not used as identity proof.
   - agent_name: gurney
     identity: "key:SHA256:rAuEMV9+oZZnCgazOxvDoviS8pfUtNu30/aOviPvH70"
+  # Mohiam — external audit agent (operator: PanikParty). One-session key
+  # generated 2026-11-10 for the v0.6.2 audit and v0.7 candidate; retire after.
+  - agent_name: mohiam
+    identity: "key:SHA256:/OOw/SogKhKVbSFkPOGy0N6gMjkjWvWpo5/leRDVEb8"
   # Placeholder examples below — replace with real registrations before
   # letting an agent open its first PR. An unregistered identity is
   # rejected by the gate, no exceptions.
