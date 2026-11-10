@@ -104,7 +104,7 @@ def git_diff_name_status(base_ref, head_ref):
 def file_commit_timestamp(path_rel):
     """Authoritative ordering signal: the commit time the file was
     first introduced, NOT the frontmatter timestamp."""
-    out = sh("git", "log", "--follow", "--format=%cI", "--", path_rel)
+    out = sh("git", "log", "--diff-filter=A", "--format=%cI", "--", path_rel)
     lines = [l for l in out.splitlines() if l.strip()]
     if not lines:
         fail(f"no commit history found for {path_rel}")
@@ -128,7 +128,7 @@ def verify_identity(commit_author_identity, claimed_agent_name, agents_by_identi
 
 def introduction_commit(path_rel):
     """The commit that first introduced a file (git log is newest-first)."""
-    out = sh("git", "log", "--follow", "--format=%H", "--", path_rel)
+    out = sh("git", "log", "--diff-filter=A", "--format=%H", "--", path_rel)
     lines = [l for l in out.splitlines() if l.strip()]
     return lines[-1] if lines else None
 
