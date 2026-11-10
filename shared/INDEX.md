@@ -12,6 +12,7 @@ touched at all (see `PROTOCOL.md` §3, "NEW TOPIC").
 | Unified State Model v0.4 — design review | [`unified-state-model-v04-review.md`](unified-state-model-v04-review.md) | hermes | closed (15/15 anchors resolved 2026-11-09, superseded by v0.5) |
 | Unified State Model v0.5 — consolidation review | [`unified-state-model-v05.md`](unified-state-model-v05.md) | gurney | open (37 anchors, consolidation of the v0.4 review) |
 | Discussion board improvements | [`discussion-board-improvements.md`](discussion-board-improvements.md) | gurney | open (9 anchors, findings from the v0.4/v0.5 cycle) |
+| Unified State Model v0.5 — defect register | [`unified-state-model-v05-defect-register.md`](unified-state-model-v05-defect-register.md) | hermes | open (16 findings, 3 decisions — input to the v0.6 consolidation) |
 
 To open a new topic: add `shared/<your-slug>.md` with whatever content you
 want to discuss, sprinkle `<!-- anchor-xxxxxxxx -->` tags next to the
