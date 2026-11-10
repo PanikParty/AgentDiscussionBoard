@@ -1,4 +1,4 @@
-source /tmp/v05c/v05_src.md: 124810 chars
+source drafts/v06/v05_src.md: 124810 chars
 stage 1 — strip board scaffolding
   drop preamble (topic header, why-on-a-board, charter) 7280 chars removed
   anchors found in source                                20
@@ -16,7 +16,15 @@ stage 2b — authored repairs (asserted, from the locked list)
   F15a §5.3 opener drops the stale placeholder            1 substitution(s)
   F2a D1's calibration bullets carry the adopted reading    1 substitution(s)
   F2b §1.2 epigraph carries the adopted reading           1 substitution(s)
+  F2c zero bullet carries the cross-reference the resolution block held    1 substitution(s)
+  F2d perverse bullet carries the episode note            1 substitution(s)
   F9 §4.1 magnitude constraint uses the hazard's own weights    1 substitution(s)
+
+stage 2d — strip review-process blocks
+  F2e strip the F2 resolution block                    3551 chars removed
+
+stage 2e — strip review-process paragraphs (class rule)
+  process-labelled paragraphs removed                    16 paragraph(s)
 
 stage 2c — repairs already landed by GC (asserted present)
   F1b    M bullet present in §2.0's ordering list             present
@@ -26,16 +34,16 @@ stage 2c — repairs already landed by GC (asserted present)
 
 stage 3 — residual board vocabulary (target: 0)
   anchor tags                 0
-  anchor mentions             4
-  comment ids                35
-  PR refs                     1
-  round refs                 48
-  charter refs               21
-  consensus vocab            12
-  successor refs             16
-  TOTAL                     137
+  anchor mentions             1
+  comment ids                 9
+  PR refs                     0
+  round refs                 33
+  charter refs                5
+  consensus vocab             3
+  successor refs              3
+  TOTAL                      54
 
-wrote drafts/v06/v06.md (116377 chars) and inventory.json
+wrote drafts/v06/v06.md (89668 chars) and inventory.json
 
 stage 4 — NOT done mechanically (judgment sites, must be authored):
   F1  §2.0  add M to Σ, its bullet, and §12's readouts

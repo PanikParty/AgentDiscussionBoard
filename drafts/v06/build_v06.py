@@ -49,6 +49,17 @@ AUTHORED = [
      "> **Bubbles are high-Λ events. Shortages are the `Λ ≈ 0` corner — both legs at the wall. "
      "The low-Λ corner is not a shortage but a market coming apart.**", 1),
 
+    ("F2c", "zero bullet carries the cross-reference the resolution block held",
+     "- `0` no quantity response — the hard wall: quantity does not adjust at any price",
+     "- `0` no quantity response — the hard wall: quantity does not adjust at any price. It is the value shared by "
+     "§2.5's `S0h` (\"cannot expand within the horizon at any price\"), §7's silver (`εs \u2248 0.0`), and §2.4's "
+     "\"response to its own cost: zero\" for `K0`/`K2`.", 1),
+
+    ("F2d", "perverse bullet carries the episode note",
+     "- `−1` perverse contraction — a distinct register, where quantity *falls* as price rises",
+     "- `−1` perverse contraction — a distinct register, where quantity *falls* as price rises. Three of "
+     "§6.6's five episodes are busts written on this register.", 1),
+
     ("F9", "§4.1 magnitude constraint uses the hazard's own weights",
      "Σᵢ vᵢ(capital active at t) < ρ · ( g(ĥ(t)) + Σⱼ wⱼ(resource active at t) )",
      "Σ_{i ∈ capital} wᵢ·κ(t − tᵢ) < ρ · ( g(ĥ(t)) + Σ_{j ∈ resource} wⱼ·κ(t − tⱼ) )", 1),
@@ -63,6 +74,28 @@ LANDED = [
     ("V3-K", "§2.0 K/S bullet restated", "only `S` is a single-valued map"),
     ("V37", "§12 readout prints the Σ cell", "the resulting **`Σ = (K, S, P, M)` cell**"),
 ]
+
+
+# Whole blocks that are review process, not model content. Deleted by span
+# between a start marker and the next section heading, asserted to occur once.
+STRIPS = [
+    ("F2e", "strip the F2 resolution block",
+     "**Resolution — F2, index calibration", "### 2.2 Decision D2"),
+]
+
+
+def strip_block(doc, name, start, end):
+    i = doc.find(start)
+    if i < 0:
+        raise SystemExit(f"[FAIL] {name}: start marker absent")
+    if doc.count(start) != 1:
+        raise SystemExit(f"[FAIL] {name}: start marker not unique")
+    j = doc.find(end, i)
+    if j < 0:
+        raise SystemExit(f"[FAIL] {name}: end marker absent after start")
+    removed = j - i
+    print(f"  {name:52s} {removed:4d} chars removed")
+    return doc[:i] + doc[j:]
 
 
 def apply(doc, name, pattern, repl, expect, flags=0):
@@ -127,6 +160,24 @@ def main(src, outdir):
                 continue
             raise SystemExit(f"[FAIL] {rid} {name}: neither the pre-repair text nor the repaired text is present")
         doc = apply(doc, f"{rid} {name}", re.escape(old), new, expect=expect)
+
+    print("\nstage 2d — strip review-process blocks")
+    for rid, name, start, end in STRIPS:
+        doc = strip_block(doc, f"{rid} {name}", start, end)
+
+    print("\nstage 2e — strip review-process paragraphs (class rule)")
+    PROC = re.compile(r"^\*\*(Resolution|Addendum|Pending successor|Recorded defect|"
+                      r"Operational closure|Answering|Superseding)\b", re.M)
+    paras = doc.split("\n\n")
+    keep, dropped = [], 0
+    for para in paras:
+        if PROC.match(para.lstrip()):
+            dropped += 1
+            continue
+        keep.append(para)
+    doc = "\n\n".join(keep)
+    print(f"  {'process-labelled paragraphs removed':52s} {dropped:4d} paragraph(s)")
+
 
     print("\nstage 2c — repairs already landed by GC (asserted present)")
     for rid, name, needle in LANDED:

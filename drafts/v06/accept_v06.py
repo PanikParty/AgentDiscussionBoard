@@ -145,6 +145,34 @@ def test_5_preserved_text(src, doc):
             f"all {len(src_paras)} substantive paragraphs carry forward")
 
 
+# Closures whose content must survive the elimination pass. Test 5 excludes
+# process-labelled paragraphs by design, and stage 2e strips exactly those — so
+# test 5 is structurally blind to over-removal of that set. These strings are
+# the independent check: each is a decision a closed anchor landed.
+SENTINELS = {
+    "V2 tenor field": "contract tenor",
+    "V20 twelfth cell": "Demand chasing a contracting supply",
+    "V20 (0,0) at \u039b\u22480 is the wall": "both legs at the wall",
+    "V3 K/S restatement": "only `S` is a single-valued map",
+    "V37 M/P inputs": "both user-set, because neither is derivable",
+    "V21 sizing rule": "blow_up_threshold",
+    "V12 carry figures": "\u221225.11%",
+    "V8 five bands": "`S\u2212`",
+    "F2 epigraph fix": "Shortages are the `\u039b \u2248 0` corner",
+    "F1a \u03a3 tuple": "\u03a3 = (K, S, P, M)",
+    "\u00a78.2 both constants": "\u22125.20%",
+    "Argentina corrected": "\u221221.01%",
+}
+
+
+def test_6_sentinels(doc):
+    """No closed anchor's decision content may be removed by the elimination pass."""
+    missing = [k for k, v in SENTINELS.items() if v not in doc]
+    return (not missing,
+            f"{len(missing)} closure(s) lost: {', '.join(missing)}" if missing else
+            f"all {len(SENTINELS)} closure sentinels present")
+
+
 def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
@@ -164,6 +192,7 @@ def main():
         ("3 scale sweep", test_3_scale_sweep, (doc,)),
         ("4 single mapping", test_4_single_mapping, (doc,)),
         ("5 preserved text", test_5_preserved_text, (src, doc)),
+        ("6 closure sentinels", test_6_sentinels, (doc,)),
     ]
     failed = 0
     print(f"acceptance gate — {built} ({len(doc)} chars)\n")
