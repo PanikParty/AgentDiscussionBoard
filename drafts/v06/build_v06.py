@@ -33,8 +33,9 @@ AUTHORED = [
     ("F15a", "§5.3 opener drops the stale placeholder",
      "**No position-sizing rule exists and this remains the model's largest practical gap.** Given the carry asymmetry (`|Γ|` grows linearly while payoff arrives once), sizing is arguably more consequential than direction. The minimum viable rule, pending a proper treatment: size so that `|Γ| × T_survivable < blow_up_threshold`, where `T_survivable` is set by the §4.1 event calendar rather than by conviction.",
      "**Sizing is arguably more consequential than direction.** The carry asymmetry — `|Γ|` grows linearly while the payoff arrives once — "
-     "means a correct call can be carried to ruin before it is vindicated. The governing rule is the resolution below; this section's earlier "
-     "placeholder sized on the wrong horizon, and only the calendar-based `T_survivable` it named survives in the repaired form.", 1),
+     "means a correct call can be carried to ruin before it is vindicated. The repaired rule appears below under "
+     "**The repaired rule.**; this section's earlier placeholder sized on the wrong horizon, and only the calendar-based "
+     "`T_survivable` it named survives in the repaired form.", 1),
 
     ("F2a", "D1's calibration bullets carry the adopted reading",
      "- `+1` fully elastic — quantity adjusts freely to price\n"
@@ -59,6 +60,16 @@ AUTHORED = [
      "- `−1` perverse contraction — a distinct register, where quantity *falls* as price rises",
      "- `−1` perverse contraction — a distinct register, where quantity *falls* as price rises. Three of "
      "§6.6's five episodes are busts written on this register.", 1),
+
+    ("F16a", "§2.4 K2 observable names the screen, not the retired statistic",
+     "Financing-quality test (the K2 discriminator)",
+     "K2-candidate screen (the K2 discriminator): the three observable conditions of the exclusion screen, "
+     "applied conjunctively; passing establishes \"not excluded\", never confirmation", 1),
+
+    ("F15c", "blow_up_threshold defined inline, not by reference to a stripped resolution",
+     "`blow_up_threshold` is defined in the resolution below (`k · U`, unencumbered non-callable capital; the fraction-of-book and margin-cushion readings are rejected there)",
+     "`blow_up_threshold = k · U`, where `U` is unencumbered non-callable capital and `k` a pre-registered fraction "
+     "(the fraction-of-book and margin-cushion readings are rejected: neither isolates capital that cannot be called away)", 1),
 
     ("F9", "§4.1 magnitude constraint uses the hazard's own weights",
      "Σᵢ vᵢ(capital active at t) < ρ · ( g(ĥ(t)) + Σⱼ wⱼ(resource active at t) )",
@@ -160,6 +171,70 @@ def main(src, outdir):
                 continue
             raise SystemExit(f"[FAIL] {rid} {name}: neither the pre-repair text nor the repaired text is present")
         doc = apply(doc, f"{rid} {name}", re.escape(old), new, expect=expect)
+
+    print("\nstage 2f — drop review citations and superseded changelogs")
+    # Parenthetical round/charter citations carry no content for a reader who
+    # does not have the review threads; the clause they annotate stays.
+    for pat, label in [
+        (r"\s*\((?:the )?A\d{1,2}(?: resolution)?(?:/V\d{1,2})?\)", "round citations"),
+        (r"\s*\(V\d{1,2}(?:, V\d{1,2})*\)", "charter citations"),
+        (r"\s*\((?:hermes|thufir|gurney|duncan)-\d{3}(?:, (?:hermes|thufir|gurney|duncan)-\d{3})*\)", "comment citations"),
+    ]:
+        doc, n = re.subn(pat, "", doc)
+        print(f"  {label:52s} {n:4d} substitution(s)")
+
+    # v0.4 and v0.3 changelogs describe drafts nobody reading this will open.
+    for start_marker, end_marker, label in [
+        ("## v0.4 changelog", "## v0.3 changelog (retained)", "v0.4 changelog"),
+        ("## v0.3 changelog (retained)", "## 0. Purpose", "v0.3 changelog"),
+    ]:
+        i = doc.find(start_marker)
+        if i < 0:
+            print(f"  {'SKIP ' + label:52s}    - start marker absent")
+            continue
+        j = doc.find(end_marker, i)
+        if j < 0:
+            print(f"  {'SKIP ' + label:52s}    - end marker absent")
+            continue
+        print(f"  {'strip ' + label:52s} {j - i:4d} chars removed")
+        doc = doc[:i] + doc[j:]
+
+    for pat, repl, label in [
+        (r"per the A5 resolution", "per the exclusion screen", "A5 prose reference"),
+        (r"the A13 resolution", "the tenor caveat", "A13 prose reference"),
+        (r"the A13 resolution's", "the tenor caveat's", "A13 possessive"),
+        (r"the formula A14/V30 identified", "the identified carry identity", "A14 prose reference"),
+        (r"\bA14\b", "the carry identity", "A14 bare reference"),
+    ]:
+        doc, n = re.subn(pat, repl, doc)
+        if n:
+            print(f"  {label:52s} {n:4d} substitution(s)")
+
+    print("\nstage 2e2 — strip discharged-process paragraphs (asserting pin state)")
+    DISCH = re.compile(
+        r"(?i)\b(pinned to|rides (?:the )?successor|the successor (?:applies|rewrites|carries)|"
+        r"in v0\.6 \(locked\)|locked, per|presently staged|is rewritten in v0\.6|"
+        r"status key \(v0\.5\)|charter question, answered)\b")
+    paras = doc.split("\n\n")
+    keep, dropped = [], []
+    for para in paras:
+        head = para.lstrip()
+        # Only the paragraph's OWN opening claim counts. A phrase buried deep in a
+        # long block (§10's gap list carries "locked, per" inside one entry) must
+        # not take the whole section with it — that removal cost §10 entirely on
+        # the first run.
+        if not head.startswith("#") and DISCH.search(head[:250]):
+            dropped.append(head[:78].replace("\n", " "))
+            continue
+        keep.append(para)
+    doc = "\n\n".join(keep)
+    for d in dropped:
+        print(f"    - {d}")
+    print(f"  {'discharged-process paragraphs removed':52s} {len(dropped):4d} paragraph(s)")
+
+    # attributions: "per <comment-id>" -> plain content
+    doc, n = re.subn(r"\s*\bper (?:hermes|thufir|gurney|duncan)-\d{3}\b", "", doc)
+    print(f"  {'drop \"per <comment-id>\" attributions':52s} {n:4d} substitution(s)")
 
     print("\nstage 2d — strip review-process blocks")
     for rid, name, start, end in STRIPS:

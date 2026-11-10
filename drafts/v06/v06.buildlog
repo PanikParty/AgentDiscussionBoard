@@ -18,13 +18,33 @@ stage 2b — authored repairs (asserted, from the locked list)
   F2b §1.2 epigraph carries the adopted reading           1 substitution(s)
   F2c zero bullet carries the cross-reference the resolution block held    1 substitution(s)
   F2d perverse bullet carries the episode note            1 substitution(s)
+  F16a §2.4 K2 observable names the screen, not the retired statistic    1 substitution(s)
+  F15c blow_up_threshold defined inline, not by reference to a stripped resolution    1 substitution(s)
   F9 §4.1 magnitude constraint uses the hazard's own weights    1 substitution(s)
+
+stage 2f — drop review citations and superseded changelogs
+  round citations                                         8 substitution(s)
+  charter citations                                       2 substitution(s)
+  comment citations                                       0 substitution(s)
+  strip v0.4 changelog                                 2460 chars removed
+  strip v0.3 changelog                                  758 chars removed
+  A5 prose reference                                      1 substitution(s)
+  A14 prose reference                                     1 substitution(s)
+  A14 bare reference                                      1 substitution(s)
+
+stage 2e2 — strip discharged-process paragraphs (asserting pin state)
+    - **Resolution — V2 (comparability; and the epigraph defect reported in `hermes-
+    - **Two edits this cannot perform, both pinned to v0.6 — one of them time-critic
+    - **The charter question, answered.** `blow_up_threshold = k · U`, where `U` is 
+    - **What rides the successor (locked, per X3).** The sizing formula block, the "
+  discharged-process paragraphs removed                   4 paragraph(s)
+  drop "per <comment-id>" attributions                    3 substitution(s)
 
 stage 2d — strip review-process blocks
   F2e strip the F2 resolution block                    3551 chars removed
 
 stage 2e — strip review-process paragraphs (class rule)
-  process-labelled paragraphs removed                    16 paragraph(s)
+  process-labelled paragraphs removed                    15 paragraph(s)
 
 stage 2c — repairs already landed by GC (asserted present)
   F1b    M bullet present in §2.0's ordering list             present
@@ -34,16 +54,16 @@ stage 2c — repairs already landed by GC (asserted present)
 
 stage 3 — residual board vocabulary (target: 0)
   anchor tags                 0
-  anchor mentions             1
-  comment ids                 9
+  anchor mentions             0
+  comment ids                 6
   PR refs                     0
-  round refs                 33
-  charter refs                5
-  consensus vocab             3
-  successor refs              3
-  TOTAL                      54
+  round refs                 24
+  charter refs                2
+  consensus vocab             0
+  successor refs              1
+  TOTAL                      33
 
-wrote drafts/v06/v06.md (89668 chars) and inventory.json
+wrote drafts/v06/v06.md (84053 chars) and inventory.json
 
 stage 4 — NOT done mechanically (judgment sites, must be authored):
   F1  §2.0  add M to Σ, its bullet, and §12's readouts
