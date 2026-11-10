@@ -65,6 +65,14 @@ Verified by presence probes against the published text. Result: **3 escapes + 1 
 | M9 §8.3 smooth hazard vs §4.1 dated events; grow-together unestimated; miners carry; R notation | MIXED: hazard inconsistency REAL-NEW; miners **partially contested** (margin channel real, but the claim was about financing/storage carry — restate precisely); notation fix-now | anchor M9 |
 | E1–E16 | REAL-NEW editorial, except: E4/E9/E14 cross-listed above; E15 symbol table = Step 6; E16 residual reference sweep | Step 6 |
 
+## E. Close-out rulings (Alex, publisher, 2026-11-10)
+
+1. **Step 0 confirmed.** v0.6.2's standing label is "published draft — substantive defects under review" (INDEX row 18, status column).
+2. **The v0.6.x line is closed.** No v0.6.3 patch cycle. All findings — including this ledger's fix-now bucket — route through the v0.7 topic (`shared/unified-state-model-v07-review.md`, 33 anchors). The corrections path stays available only for a safety-level defect.
+3. **v0.7's shape: split document.** Normative specification (current rules only) + change log (design notes, withdrawn text, review history) — Fable recommendation #10 adopted as the standing shape.
+
+Implication for this ledger: no item above produces a patch against v0.6.2; every REAL-NEW / ESCAPED-PIN / NEEDS-DISCUSSION item is workload for the v0.7 cycle, worked through its anchors under the standing quorum rules.
+
 ## D. Process items (improvements topic filings)
 
 1. Pinned-discharge verification as a permanent gate step (registry derived from resolutions, not hand-maintained — Duncan's checker proved the hand-maintained registry passes the broken document).
