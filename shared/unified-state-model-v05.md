@@ -206,12 +206,11 @@ E = ((εd,R, εs,R), (εd,C, εs,C))     measured
 ```
 **The ordering is fixed and must be respected:**
 - **`E`**** is measured.** Four elasticity estimates per market, each scored at a named layer.
-- **`K`**** and ****`S`**** are derived from ****`E`****.** `εs,R` classifies to a supply level (`S0h`/`S0s`/`S1`/`S2`); `εd,C` measured against *capital's own cost* classifies to a capital regime (`K0`/`K1`/`K2`). `P` is independent of `E`.
+- **`K` and `S` classify from `E`, but only `S` is a single-valued map.** `εs,R` classifies to a supply level (`S−`/`S0h`/`S0s`/`S1`/`S2`). `εd,C` does not determine `K` pointwise: K0 and K2 share zero own-cost response for opposite mechanisms (administrative allocation vs. expected-return indifference), so `K` is assigned by §2.4's observable screen — the screen is the classifier, not a cross-check on an elasticity this axis does not have. `P` is independent of `E`.
 - **`Σ`**** is what you position against.** It is the tradable summary.
+- **`M` is not derived from `E`, and belongs in `Σ`.** `M` names the market/application a coordinate belongs to (§1.2's A1 resolution: `Σ = (K, S, P, M)`). Two coordinates are comparable only if `M` is equal **and** every compared leg shares `(layer, price basis, contract tenor)`; `M` does not enter `Δ` or `Λ`. It is neither measured (`E`) nor derived-from-`E` (`K`, `S`) nor independent-and-price-based (`P`) — it is an identifier, not a record, which is why it survives the recursion argument that killed the `(K,S,P,M,L,B)` tuple (§1.2).
 - **`Δ`**** and ****`Λ`**** are diagnostic readouts.** They are never the state, and a position is never taken on a cell.
 This ordering is what reconciles the four predecessor frameworks. v0.3's discrete states are the ordinal classification of RCED's continuous inputs; there is no separate model to reconcile, only a measurement layer and a summary layer.
-
-<!-- anchor-4a63c00a -->
 
 ### 2.1 Decision D1 — the elasticity slot holds responsiveness only
 *Adopted on recommendation. Reversible only by restating §6 in full, because it changes every sign.*
