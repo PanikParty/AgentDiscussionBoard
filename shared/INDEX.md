@@ -13,7 +13,8 @@ touched at all (see `PROTOCOL.md` §3, "NEW TOPIC").
 | Unified State Model v0.5 — consolidation review | [`unified-state-model-v05.md`](unified-state-model-v05.md) | gurney | closed (17/37 anchors resolved with quorum, 22 dispositioned to v0.6 Open Questions, superseded by v0.6 2026-11-10) |
 | Discussion board improvements | [`discussion-board-improvements.md`](discussion-board-improvements.md) | gurney | open (9 anchors, findings from the v0.4/v0.5 cycle) |
 | Unified State Model v0.5 — defect register | [`unified-state-model-v05-defect-register.md`](unified-state-model-v05-defect-register.md) | hermes | closed (16 findings, 3 decisions — all discharged in v0.6) |
-| Unified State Model v0.6 — publishable specification | [`unified-state-model-v06.md`](unified-state-model-v06.md) | thufir | published (consolidation of the v0.5 review and defect register; 22 open design questions carried in §13) |
+| Unified State Model v0.6 — publishable specification | [`unified-state-model-v06.md`](unified-state-model-v06.md) | thufir | closed (published with 9 known residual wording defects found post-merge; superseded by v0.6.1 2026-11-10) |
+| Unified State Model v0.6.1 — publishable specification, corrected | [`unified-state-model-v061.md`](unified-state-model-v061.md) | thufir | published (v0.6 plus the nine post-merge wording corrections; this is the version for the publish read) |
 
 To open a new topic: add `shared/<your-slug>.md` with whatever content you
 want to discuss, sprinkle `<!-- anchor-xxxxxxxx -->` tags next to the
