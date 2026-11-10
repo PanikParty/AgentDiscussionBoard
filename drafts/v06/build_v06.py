@@ -25,6 +25,33 @@ BOARD_VOCAB = {
     "successor refs":     r"\bv0\.6\b",
 }
 
+AUTHORED = [
+    ("F1a", "Σ carries M",
+     "Σ = (K, S, P)                    with carry Γ",
+     "Σ = (K, S, P, M)                 with carry Γ", 1),
+
+    ("F1b", "M bullet in the ordering list",
+     "`εd,C` measured against *capital's own cost* classifies to a capital regime (`K0`/`K1`/`K2`). `P` is independent of `E`.",
+     "`εd,C` measured against *capital's own cost* classifies to a capital regime (`K0`/`K1`/`K2`). `P` is independent of `E`.\n"
+     "- **`M` is not derived from `E`.** `M` names the market or application a coordinate belongs to. Two coordinates are comparable "
+     "only if `M` is equal **and** every compared leg shares `(layer, price basis)`; `M` enters neither `Δ` nor `Λ`. It costs one field "
+     "and it is what makes \"is this the same market?\" answerable from the state rather than from the prose around it.", 1),
+
+    ("F15a", "§5.3 opener drops the stale placeholder",
+     "**No position-sizing rule exists and this remains the model's largest practical gap.** Given the carry asymmetry (`|Γ|` grows linearly while payoff arrives once), sizing is arguably more consequential than direction. The minimum viable rule, pending a proper treatment: size so that `|Γ| × T_survivable < blow_up_threshold`, where `T_survivable` is set by the §4.1 event calendar rather than by conviction.",
+     "**Sizing is arguably more consequential than direction.** The carry asymmetry — `|Γ|` grows linearly while the payoff arrives once — "
+     "means a correct call can be carried to ruin before it is vindicated. The governing rule is the resolution below; this section's earlier "
+     "placeholder sized on the wrong horizon, and only the calendar-based `T_survivable` it named survives in the repaired form.", 1),
+
+    ("F15b", "§10.6 re-scoped to calibration",
+     "**No position-sizing rule** beyond the placeholder in §5.3. Given the carry asymmetry, sizing is arguably more important than direction.",
+     "**The sizing rule is derived but uncalibrated.** §5.3's `min(blow_up_threshold/(|Γ|·T_surv), size_execution)` is a derivation under two "
+     "stated premises (exit rule honoured; zero ruin tolerance), not a placeholder. What is missing is calibration: `blow_up_threshold` is "
+     "undefined, and the kernel-form numerics need the pre-registered decay parameters (`p`, `W`) and the fitted `ρ`. The general "
+     "ruin-adjusted optimum is named as unsolved in §5.3 rather than relocated here.", 1),
+]
+
+
 def apply(doc, name, pattern, repl, expect, flags=0):
     out, n = re.subn(pattern, repl, doc, flags=flags)
     if expect is not None and n != expect:
@@ -74,6 +101,10 @@ def main(src, outdir):
     print("\nstage 2 — normalise whitespace")
     doc = re.sub(r"\n{3,}", "\n\n", doc)
     doc = doc.strip() + "\n"
+
+    print("\nstage 2b — authored repairs (asserted, from the locked list)")
+    for rid, name, old, new, expect in AUTHORED:
+        doc = apply(doc, f"{rid} {name}", re.escape(old), new, expect=expect)
 
     os.makedirs(outdir, exist_ok=True)
     out = os.path.join(outdir, "v06.md")
