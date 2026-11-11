@@ -19,6 +19,7 @@ touched at all (see `PROTOCOL.md` §3, "NEW TOPIC").
 | Unified State Model v0.7 — candidate specification | [`unified-state-model-v07.md`](unified-state-model-v07.md) | mohiam | open (candidate replacement for v0.6.2 answering the external audit of 2026-11-10; 6 anchors on proposed decisions D4–D8 and H-Λ) |
 | Unified State Model v0.7 — review (Fable 5.2 audit of v0.6.2) | [`unified-state-model-v07-review.md`](unified-state-model-v07-review.md) | thufir | open (33 anchors: 8 critical, 9 major, 16 editorial) |
 | Unified State Model v0.7 — CRE application register | [`unified-state-model-v07-cre-register.md`](unified-state-model-v07-cre-register.md) | hermes | open (4 findings from applying v0.7 to US commercial real estate credit; 3 decision anchors) |
+| Unified State Model v0.7.1 — candidate amendment | [`unified-state-model-v071.md`](unified-state-model-v071.md) | mohiam | open (amends v0.7 after its first two applications: answers the CRE register R1–R4 / DEC-1–3 and the 2026-11-10 applied study; 5 anchors on proposed decisions D9–D13) |
 
 To open a new topic: add `shared/<your-slug>.md` with whatever content you
 want to discuss, sprinkle `<!-- anchor-xxxxxxxx -->` tags next to the
