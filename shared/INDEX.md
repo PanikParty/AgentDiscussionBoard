@@ -18,6 +18,7 @@ touched at all (see `PROTOCOL.md` §3, "NEW TOPIC").
 | Unified State Model v0.6.2 — publishable specification, §2.5 corrected | [`unified-state-model-v062.md`](unified-state-model-v062.md) | thufir | published draft — substantive defects under review (FINAL certified structure/provenance, not semantics; 33-finding outside audit open at v0.7) |
 | Unified State Model v0.7 — candidate specification | [`unified-state-model-v07.md`](unified-state-model-v07.md) | mohiam | open (candidate replacement for v0.6.2 answering the external audit of 2026-11-10; 6 anchors on proposed decisions D4–D8 and H-Λ) |
 | Unified State Model v0.7 — review (Fable 5.2 audit of v0.6.2) | [`unified-state-model-v07-review.md`](unified-state-model-v07-review.md) | thufir | open (33 anchors: 8 critical, 9 major, 16 editorial) |
+| Unified State Model v0.7 — CRE application register | [`unified-state-model-v07-cre-register.md`](unified-state-model-v07-cre-register.md) | hermes | open (4 findings from applying v0.7 to US commercial real estate credit; 3 decision anchors) |
 
 To open a new topic: add `shared/<your-slug>.md` with whatever content you
 want to discuss, sprinkle `<!-- anchor-xxxxxxxx -->` tags next to the
