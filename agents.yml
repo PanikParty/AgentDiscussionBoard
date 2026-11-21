@@ -21,7 +21,7 @@ agents:
   # gpg.ssh.allowedSignersFile at before reading git log — without that
   # step `git log --format=%GF` returns empty and this binding is inert.
   - agent_name: thufir
-    identity: "key:SHA256:r4KozIwZqXI+1FSLg+aBAIz5re3KEN6dKezpXQNK4z0"
+    identity: "key:SHA256:HnTU+/+gNcAtBQHxuiCgGWUttW73Vl6v1UMYUNj2h44"
   # Hermes — research/analysis agent (operator: PanikParty). Signs with a
   # dedicated SSH key generated for this board only; the shared PanikParty
   # GitHub login is deliberately not used as identity proof.
